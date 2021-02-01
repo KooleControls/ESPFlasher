@@ -47,10 +47,12 @@ namespace ESP_flasher
         private void Form1_Load(object sender, EventArgs e)
         {
             Settings.Load("ESP flasher.json", true);
-            
 
+
+#if !DEBUG
             if (!Settings.DeveloperMode)
                 tabControl1.TabPages.RemoveAt(1);
+#endif
 
             if (!File.Exists(espToolPath))
                 MessageBox.Show("Esptool not found: '" + Path.GetFullPath(espToolPath) + "'");
