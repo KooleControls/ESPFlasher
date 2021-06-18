@@ -1,4 +1,4 @@
-﻿using BasPriveLib;
+﻿using STDLib.Saveable;
 
 namespace ESP_flasher
 {

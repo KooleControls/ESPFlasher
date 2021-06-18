@@ -1,4 +1,4 @@
-﻿using BasPriveLIB;
+﻿using STDLib.Misc;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,18 +8,13 @@ namespace ESP_flasher
 {
     public class BinFile : PropertySensitive
     {
-        private static Dictionary<string, int> _CharSpaces = new Dictionary<string, int>();
-        private int _Address = 0;
-        private string _File = "Select file...";
-
         [TypeConverter(typeof(AddressConverter))]
-        public int Address { get { return GetPar(_Address); } set { SetPar(ref _Address, value); } }
+        public int Address { get { return GetPar(0); } set { SetPar(value); } }
 
         [EditorAttribute(typeof(System.Windows.Forms.Design.FileNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        public string File { get { return GetPar(_File); } set { SetPar(ref _File, value); } }
+        public string File { get { return GetPar("Select file..."); } set { SetPar(value); } }
 
-
-        private Dictionary<string, int> CharSpaces { get { return GetPar(_CharSpaces); } set { SetPar(ref _CharSpaces, value); } }
+        private Dictionary<string, int> CharSpaces { get { return GetPar(new Dictionary<string, int>()); } set { SetPar(value); } }
 
 
         public override string ToString()

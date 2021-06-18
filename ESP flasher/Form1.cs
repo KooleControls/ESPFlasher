@@ -1,5 +1,4 @@
-﻿using BasPriveLIB;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -22,7 +21,6 @@ namespace ESP_flasher
 {
     public partial class Form1 : Form
     {
-        readonly string espToolPath = "esptool.exe";
         readonly string archiveFilter = "Binary file|*.kczip";
         readonly string hexFilter = "Intel hex file|*.hex";
 
@@ -35,7 +33,6 @@ namespace ESP_flasher
         {
             InitializeComponent();
             flashArchive1.ArchiveFilter = archiveFilter;
-            flashArchive1.ESPToolExe = espToolPath;
             flashArchive1.TempFolder = tempFolderFlash;
             createArchives1.ArchiveFilter = archiveFilter;
             createArchives1.HexFilter = hexFilter;
@@ -46,16 +43,7 @@ namespace ESP_flasher
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Settings.Load("ESP flasher.json", true);
-
-
-#if !DEBUG
-            if (!Settings.DeveloperMode)
-                tabControl1.TabPages.RemoveAt(1);
-#endif
-
-            if (!File.Exists(espToolPath))
-                MessageBox.Show("Esptool not found: '" + Path.GetFullPath(espToolPath) + "'");
+            Settings.Load(true);
 
             Version vers = Assembly.GetExecutingAssembly().GetName().Version;
             this.Text += $" V{vers.Major.ToString("D2")}.{vers.Minor.ToString("D2")}.{vers.Build.ToString("D2")}";

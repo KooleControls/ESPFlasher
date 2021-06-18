@@ -75,7 +75,6 @@
             // 
             this.flashArchive1.ArchiveFilter = null;
             this.flashArchive1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flashArchive1.ESPToolExe = null;
             this.flashArchive1.Location = new System.Drawing.Point(3, 3);
             this.flashArchive1.Name = "flashArchive1";
             this.flashArchive1.Size = new System.Drawing.Size(504, 454);

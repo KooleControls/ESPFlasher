@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Text.RegularExpressions;
-using BasPriveLIB;
 using Newtonsoft.Json;
 using System.IO.Compression;
+using STDLib.Misc;
 
 namespace ESP_flasher
 {

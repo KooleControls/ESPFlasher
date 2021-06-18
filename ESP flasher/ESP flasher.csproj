@@ -40,6 +40,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Design" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.Ports, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Ports.5.0.1\lib\net461\System.IO.Ports.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -68,24 +71,16 @@
     </Compile>
     <Compile Include="HexCreate.cs" />
     <Compile Include="I32HEX.cs" />
-    <Compile Include="BasPriveLIB\BaseSettings.cs" />
-    <Compile Include="BasPriveLIB\Control_Ext.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="BasPriveLIB\ISaveable.cs" />
-    <Compile Include="BasPriveLIB\JSON.cs" />
-    <Compile Include="BasPriveLIB\Saveable.cs" />
-    <Compile Include="BasPriveLIB\Serializer.cs" />
     <Compile Include="Option.cs" />
     <Compile Include="PartitionEntry.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BasPriveLIB\PropertySensitive.cs" />
-    <Compile Include="BasPriveLIB\ThreadedBindingList.cs" />
     <Compile Include="Release.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -130,9 +125,18 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="esptool.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <ProjectReference Include="..\ESPTool\ESPTool\ESPTool.csproj">
+      <Project>{007e80ed-31c8-42eb-922b-9981adff79ec}</Project>
+      <Name>ESPTool</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NET_Library\FRMLib\FRMLib.csproj">
+      <Project>{6062fc18-1c98-4f9a-be4c-44171cbcb55e}</Project>
+      <Name>FRMLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NET_Library\STDLib\STDLib.csproj">
+      <Project>{ec28666d-e075-4e95-bd34-c45a25cf7ff6}</Project>
+      <Name>STDLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

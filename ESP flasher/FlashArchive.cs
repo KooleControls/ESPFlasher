@@ -7,22 +7,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using BasPriveLIB;
 using System.IO.Ports;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using Newtonsoft.Json;
-using BasPriveLIB;
 using System.Text.RegularExpressions;
+using STDLib.Misc;
+using FRMLib;
+using ESPTool.Firmware;
+using ESPTool;
 
 namespace ESP_flasher
 {
     public partial class FlashArchive : UserControl
     {
+        ESPTool.ESPTool espTool = new ESPTool.ESPTool();
         readonly ThreadedBindingList<int> supportedBaud = new ThreadedBindingList<int> { 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 };
         readonly int defaultBaud = 9;
-        public string ESPToolExe { get; set; }
         public string ArchiveFilter { get; set; }
         public string TempFolder { get; set; }
 
@@ -123,98 +125,40 @@ namespace ESP_flasher
             Erase();
         }
 
-        public void Program()
+        public async void Program()
         {
-            string aha = "";
+            FirmwareImage fi = new FirmwareImage();
 
-            foreach (BinFile file in files)
-                aha += " 0x" + file.Address.ToString("X") + " \"" + file.File + "\"";
+            foreach(var file in files)
+            {
+                Segment segment = new Segment();
+                segment.Offset = (UInt32)file.Address;
+                segment.Data = File.ReadAllBytes(file.File);
+                fi.Segments.Add(segment);
+            }
 
-            string arguments = string.Format("--port {0} --baud {1} write_flash{2}", comboBox2.Text, comboBox1.Text, aha);
+            string com = comboBox2.Text;
+            int baud = int.Parse(comboBox1.Text);
 
-            StartFlasher(arguments);
+            await espTool.FlashFirmware(com, baud, Progress, fi);
         }
+
+
+        void Progress(ProgressReport report)
+        {
+            progressBar1.InvokeIfRequired(()=>progressBar1.Value = (int)(report.Progress * 100));
+            if(report.Message!= null)
+            {
+                richTextBox1.InvokeIfRequired(() => richTextBox1.Text += report.Message + "\r\n");
+            }
+        }
+
 
         public void Erase()
         {
-            string arguments = string.Format("--port {0} --baud {1} erase_flash", comboBox2.Text, comboBox1.Text);
-
-            StartFlasher(arguments);
+            throw new NotImplementedException();
         }
 
-
-
-
-
-
-        Stopwatch flashDurationTimer = new Stopwatch();
-        Process espTool = new Process();
-        void StartFlasher(string arguments)
-        {
-            this.Enabled = false;
-            richTextBox1.Text = arguments + "\r\n\r\n";
-
-            espTool = new Process();
-            espTool.StartInfo.FileName = ESPToolExe;
-            espTool.OutputDataReceived += EspTool_OutputDataReceived;
-            espTool.Exited += EspTool_Exited;
-            espTool.ErrorDataReceived += EspTool_ErrorDataReceived;
-
-            espTool.StartInfo.Arguments = arguments;
-            espTool.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            espTool.EnableRaisingEvents = true;
-            espTool.StartInfo.UseShellExecute = false;
-            espTool.StartInfo.RedirectStandardOutput = true;
-            espTool.StartInfo.RedirectStandardError = true;
-            espTool.StartInfo.UseShellExecute = false;
-            espTool.StartInfo.CreateNoWindow = true;
-            flashDurationTimer.Reset();
-            espTool.Start();
-            flashDurationTimer.Start();
-
-            espTool.BeginOutputReadLine();
-            espTool.BeginErrorReadLine();
-        }
-
-
-        private void EspTool_Exited(object sender, EventArgs e)
-        {
-            flashDurationTimer.Stop();
-            label3.InvokeIfRequired(x => x.Text = flashDurationTimer.Elapsed.TotalSeconds.ToString("0.##") + 's');
-            this.InvokeIfRequired(x => x.Enabled = true);
-            progressBar1.InvokeIfRequired(x => x.Value = 0);
-            AddLogRow("Programmer exited");
-        }
-
-        private void EspTool_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            AddLogRow(e.Data);
-        }
-
-        private void EspTool_OutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            if (e.Data == null)
-                return;
-            Match m = Regex.Match(e.Data, @"\((\d+) ?%\)");
-
-            if (m.Success)
-            {
-                int progress;
-                if (int.TryParse(m.Groups[1].Value, out progress))
-                {
-                    if (progress != 100)
-                        progressBar1.InvokeIfRequired(x => x.Value = progress);
-                }
-            }
-
-            AddLogRow(e.Data);
-        }
-
-
-        void AddLogRow(string text)
-        {
-            richTextBox1.InvokeIfRequired(x => x.Text += text + "\r\n");
-        }
 
         private void groupBox3_Enter(object sender, EventArgs e)
         {

@@ -5,6 +5,12 @@ VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ESP flasher", "ESP flasher\ESP flasher.csproj", "{A21EF612-535C-4E43-85B1-201E0FA2F230}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESPTool", "ESPTool\ESPTool\ESPTool.csproj", "{007E80ED-31C8-42EB-922B-9981ADFF79EC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "STDLib", "NET_Library\STDLib\STDLib.csproj", "{EC28666D-E075-4E95-BD34-C45A25CF7FF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FRMLib", "NET_Library\FRMLib\FRMLib.csproj", "{6062FC18-1C98-4F9A-BE4C-44171CBCB55E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +21,18 @@ Global
 		{A21EF612-535C-4E43-85B1-201E0FA2F230}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A21EF612-535C-4E43-85B1-201E0FA2F230}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A21EF612-535C-4E43-85B1-201E0FA2F230}.Release|Any CPU.Build.0 = Release|Any CPU
+		{007E80ED-31C8-42EB-922B-9981ADFF79EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{007E80ED-31C8-42EB-922B-9981ADFF79EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{007E80ED-31C8-42EB-922B-9981ADFF79EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{007E80ED-31C8-42EB-922B-9981ADFF79EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC28666D-E075-4E95-BD34-C45A25CF7FF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC28666D-E075-4E95-BD34-C45A25CF7FF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC28666D-E075-4E95-BD34-C45A25CF7FF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC28666D-E075-4E95-BD34-C45A25CF7FF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6062FC18-1C98-4F9A-BE4C-44171CBCB55E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6062FC18-1C98-4F9A-BE4C-44171CBCB55E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6062FC18-1C98-4F9A-BE4C-44171CBCB55E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6062FC18-1C98-4F9A-BE4C-44171CBCB55E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
