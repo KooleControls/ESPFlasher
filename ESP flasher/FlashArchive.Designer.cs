@@ -38,11 +38,12 @@
             this.btn_Browse = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.btn_RefreshCOM = new System.Windows.Forms.Button();
+            this.cmb_Baudrate = new System.Windows.Forms.ComboBox();
+            this.btn_Refresh = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.cmb_Comname = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.btn_Cancel = new System.Windows.Forms.Button();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -53,6 +54,7 @@
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.Controls.Add(this.btn_Cancel);
             this.groupBox3.Controls.Add(this.btn_Erase);
             this.groupBox3.Controls.Add(this.label3);
             this.groupBox3.Controls.Add(this.richTextBox1);
@@ -64,7 +66,6 @@
             this.groupBox3.TabIndex = 12;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Flash";
-            this.groupBox3.Enter += new System.EventHandler(this.groupBox3_Enter);
             // 
             // btn_Erase
             // 
@@ -155,10 +156,10 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.comboBox1);
-            this.groupBox1.Controls.Add(this.btn_RefreshCOM);
+            this.groupBox1.Controls.Add(this.cmb_Baudrate);
+            this.groupBox1.Controls.Add(this.btn_Refresh);
             this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.comboBox2);
+            this.groupBox1.Controls.Add(this.cmb_Comname);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
@@ -167,26 +168,26 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Comminucation settings";
             // 
-            // comboBox1
+            // cmb_Baudrate
             // 
-            this.comboBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.cmb_Baudrate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(65, 19);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(434, 21);
-            this.comboBox1.TabIndex = 0;
+            this.cmb_Baudrate.FormattingEnabled = true;
+            this.cmb_Baudrate.Location = new System.Drawing.Point(65, 19);
+            this.cmb_Baudrate.Name = "cmb_Baudrate";
+            this.cmb_Baudrate.Size = new System.Drawing.Size(434, 21);
+            this.cmb_Baudrate.TabIndex = 0;
             // 
-            // btn_RefreshCOM
+            // btn_Refresh
             // 
-            this.btn_RefreshCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_RefreshCOM.Location = new System.Drawing.Point(505, 44);
-            this.btn_RefreshCOM.Name = "btn_RefreshCOM";
-            this.btn_RefreshCOM.Size = new System.Drawing.Size(75, 23);
-            this.btn_RefreshCOM.TabIndex = 4;
-            this.btn_RefreshCOM.Text = "Refresh";
-            this.btn_RefreshCOM.UseVisualStyleBackColor = true;
-            this.btn_RefreshCOM.Click += new System.EventHandler(this.btn_RefreshCOM_Click);
+            this.btn_Refresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_Refresh.Location = new System.Drawing.Point(505, 44);
+            this.btn_Refresh.Name = "btn_Refresh";
+            this.btn_Refresh.Size = new System.Drawing.Size(75, 23);
+            this.btn_Refresh.TabIndex = 4;
+            this.btn_Refresh.Text = "Refresh";
+            this.btn_Refresh.UseVisualStyleBackColor = true;
+            this.btn_Refresh.Click += new System.EventHandler(this.btn_RefreshCOM_Click);
             // 
             // label1
             // 
@@ -197,15 +198,15 @@
             this.label1.TabIndex = 1;
             this.label1.Text = "Com port";
             // 
-            // comboBox2
+            // cmb_Comname
             // 
-            this.comboBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.cmb_Comname.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(65, 46);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(434, 21);
-            this.comboBox2.TabIndex = 3;
+            this.cmb_Comname.FormattingEnabled = true;
+            this.cmb_Comname.Location = new System.Drawing.Point(65, 46);
+            this.cmb_Comname.Name = "cmb_Comname";
+            this.cmb_Comname.Size = new System.Drawing.Size(434, 21);
+            this.cmb_Comname.TabIndex = 3;
             // 
             // label2
             // 
@@ -215,6 +216,17 @@
             this.label2.Size = new System.Drawing.Size(50, 13);
             this.label2.TabIndex = 2;
             this.label2.Text = "Baudrate";
+            // 
+            // btn_Cancel
+            // 
+            this.btn_Cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_Cancel.Location = new System.Drawing.Point(505, 19);
+            this.btn_Cancel.Name = "btn_Cancel";
+            this.btn_Cancel.Size = new System.Drawing.Size(75, 23);
+            this.btn_Cancel.TabIndex = 9;
+            this.btn_Cancel.Text = "Cancel";
+            this.btn_Cancel.UseVisualStyleBackColor = true;
+            this.btn_Cancel.Click += new System.EventHandler(this.btn_Cancel_Click);
             // 
             // FlashArchive
             // 
@@ -248,10 +260,11 @@
         private System.Windows.Forms.Button btn_Browse;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.Button btn_RefreshCOM;
+        private System.Windows.Forms.ComboBox cmb_Baudrate;
+        private System.Windows.Forms.Button btn_Refresh;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.ComboBox cmb_Comname;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btn_Cancel;
     }
 }

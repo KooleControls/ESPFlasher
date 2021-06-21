@@ -17,11 +17,13 @@ using STDLib.Misc;
 using FRMLib;
 using ESPTool.Firmware;
 using ESPTool;
+using System.Threading;
 
 namespace ESP_flasher
 {
     public partial class FlashArchive : UserControl
     {
+        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         ESPTool.ESPTool espTool = new ESPTool.ESPTool();
         readonly ThreadedBindingList<int> supportedBaud = new ThreadedBindingList<int> { 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 };
         readonly int defaultBaud = 9;
@@ -33,7 +35,11 @@ namespace ESP_flasher
         public FlashArchive()
         {
             InitializeComponent();
+
+            espTool.OnProgressMessage += (sender, e) => richTextBox1.InvokeIfRequired(() => richTextBox1.Text += e + "\r\n");
+            espTool.OnProgressValueChanged += (sender, e) => progressBar1.InvokeIfRequired(() => progressBar1.Value = (int)(e * 100));
         }
+
 
         ~FlashArchive()
         {
@@ -42,10 +48,11 @@ namespace ESP_flasher
 
         private void FlashArchive_Load(object sender, EventArgs e)
         {
-            comboBox1.DataSource = supportedBaud;
-            comboBox1.SelectedIndex = defaultBaud;
+            cmb_Baudrate.DataSource = supportedBaud;
+            cmb_Baudrate.SelectedIndex = defaultBaud;
 
             RefreshComList();
+            SetControlsEnabled(true);
         }
 
         private void btn_RefreshCOM_Click(object sender, EventArgs e)
@@ -56,10 +63,10 @@ namespace ESP_flasher
 
         void RefreshComList()
         {
-            comboBox2.Items.Clear();
-            comboBox2.Items.AddRange(SerialPort.GetPortNames());
-            if (comboBox2.Items.Count > 0)
-                comboBox2.SelectedIndex = 0;
+            cmb_Comname.Items.Clear();
+            cmb_Comname.Items.AddRange(SerialPort.GetPortNames());
+            if (cmb_Comname.Items.Count > 0)
+                cmb_Comname.SelectedIndex = 0;
         }
 
         private void btn_Browse_Click(object sender, EventArgs e)
@@ -78,12 +85,12 @@ namespace ESP_flasher
 
         public void SetCom_Port(string portname)
         {
-            comboBox2.Text = portname;
+            cmb_Comname.Text = portname;
         }
 
         public void SetCom_Baud(string baud)
         {
-            comboBox1.Text = baud;
+            cmb_Baudrate.Text = baud;
         }
 
         public void OpenFile(string filename)
@@ -125,8 +132,17 @@ namespace ESP_flasher
             Erase();
         }
 
+        
+        private void btn_Cancel_Click(object sender, EventArgs e)
+        {
+            cancellationTokenSource.Cancel();
+        }
+
+
         public async void Program()
         {
+            cancellationTokenSource = new CancellationTokenSource();
+            SetControlsEnabled(false);
             FirmwareImage fi = new FirmwareImage();
 
             foreach(var file in files)
@@ -137,33 +153,36 @@ namespace ESP_flasher
                 fi.Segments.Add(segment);
             }
 
-            string com = comboBox2.Text;
-            int baud = int.Parse(comboBox1.Text);
-
-            await espTool.FlashFirmware(com, baud, Progress, fi);
+            string com = cmb_Comname.Text;
+            int baud = int.Parse(cmb_Baudrate.Text);
+            bool suc = await espTool.FlashFirmware(com, baud, fi, cancellationTokenSource.Token);
+            richTextBox1.AppendText($"Flashing firmware {(suc?"oke":"failed")}.");
+            SetControlsEnabled(true);
         }
 
-
-        void Progress(ProgressReport report)
+        public async void Erase()
         {
-            progressBar1.InvokeIfRequired(()=>progressBar1.Value = (int)(report.Progress * 100));
-            if(report.Message!= null)
-            {
-                richTextBox1.InvokeIfRequired(() => richTextBox1.Text += report.Message + "\r\n");
-            }
+            cancellationTokenSource = new CancellationTokenSource();
+            SetControlsEnabled(false);
+            string com = cmb_Comname.Text;
+            int baud = int.Parse(cmb_Baudrate.Text);
+            bool suc = await espTool.Erase(com, baud, cancellationTokenSource.Token);
+            richTextBox1.AppendText($"Flashing firmware {(suc ? "oke" : "failed")}.");
+            SetControlsEnabled(true);
         }
 
-
-        public void Erase()
+        void SetControlsEnabled(bool enabled)
         {
-            throw new NotImplementedException();
+            cmb_Baudrate.Enabled = enabled;
+            cmb_Comname.Enabled = enabled;
+            btn_Browse.Enabled = enabled;
+            btn_Erase.Enabled = enabled;
+            btn_Program.Enabled = enabled;
+            btn_Refresh.Enabled = enabled;
+            btn_Cancel.Enabled = !enabled;
+            progressBar1.Value = 0;
         }
 
-
-        private void groupBox3_Enter(object sender, EventArgs e)
-        {
-
-        }
     }
 
 }
