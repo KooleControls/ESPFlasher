@@ -4,7 +4,6 @@ namespace ESP_flasher
 {
     public class Settings : BaseSettings<Settings>
     {
-        public static bool DeveloperMode { get { return GetPar<bool>(false); } set { SetPar<bool>(value); } }
         public static bool AutoReleaseOnStart { get { return GetPar<bool>(false); } set { SetPar<bool>(value); } }
         public static string PathToFlashProjectArgs { get { return GetPar<string>(@"..\build\flash_project_args"); } set { SetPar<string>(value); } }
         public static string DefaultReleaseFolder { get { return GetPar<string>(@"..\release"); } set { SetPar<string>(value); } }

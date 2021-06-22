@@ -35,9 +35,6 @@ namespace ESP_flasher
         public FlashArchive()
         {
             InitializeComponent();
-
-            espTool.OnProgressMessage += (sender, e) => richTextBox1.InvokeIfRequired(() => richTextBox1.Text += e + "\r\n");
-            espTool.OnProgressValueChanged += (sender, e) => progressBar1.InvokeIfRequired(() => progressBar1.Value = (int)(e * 100));
         }
 
 
@@ -145,7 +142,7 @@ namespace ESP_flasher
             SetControlsEnabled(false);
             FirmwareImage fi = new FirmwareImage();
 
-            foreach(var file in files)
+            foreach (var file in files)
             {
                 Segment segment = new Segment();
                 segment.Offset = (UInt32)file.Address;
@@ -155,8 +152,9 @@ namespace ESP_flasher
 
             string com = cmb_Comname.Text;
             int baud = int.Parse(cmb_Baudrate.Text);
-            bool suc = await espTool.FlashFirmware(com, baud, fi, cancellationTokenSource.Token);
-            richTextBox1.AppendText($"Flashing firmware {(suc?"oke":"failed")}.");
+            Progress<float> progress = new Progress<float>((e) => progressBar1.InvokeIfRequired(() => progressBar1.Value = (int)(e * 100)));
+            Result result = await espTool.FlashFirmware(com, baud, fi, false, cancellationTokenSource.Token);
+            richTextBox1.AppendText($"Flashing firmware {(result.Success?"oke":"failed")}.");
             SetControlsEnabled(true);
         }
 
@@ -166,8 +164,8 @@ namespace ESP_flasher
             SetControlsEnabled(false);
             string com = cmb_Comname.Text;
             int baud = int.Parse(cmb_Baudrate.Text);
-            bool suc = await espTool.Erase(com, baud, cancellationTokenSource.Token);
-            richTextBox1.AppendText($"Flashing firmware {(suc ? "oke" : "failed")}.");
+            Result result = await espTool.Erase(com, baud, cancellationTokenSource.Token);
+            richTextBox1.AppendText($"Flashing firmware {(result.Success ? "oke" : "failed")}.");
             SetControlsEnabled(true);
         }
 
