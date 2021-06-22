@@ -57,6 +57,7 @@
     <Compile Include="BinFile.cs" />
     <Compile Include="CommandlineOptions.cs" />
     <Compile Include="CommandlineParser.cs" />
+    <Compile Include="ControlWriter.cs" />
     <Compile Include="CreateArchives.cs">
       <SubType>UserControl</SubType>
     </Compile>

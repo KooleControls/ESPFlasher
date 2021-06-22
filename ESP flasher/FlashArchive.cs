@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO.Ports;
@@ -35,6 +34,7 @@ namespace ESP_flasher
         public FlashArchive()
         {
             InitializeComponent();
+            espTool.Logger = new ControlWriter(richTextBox1);
         }
 
 
@@ -138,6 +138,7 @@ namespace ESP_flasher
 
         public async void Program()
         {
+            richTextBox1.Text = "";
             cancellationTokenSource = new CancellationTokenSource();
             SetControlsEnabled(false);
             FirmwareImage fi = new FirmwareImage();
@@ -153,19 +154,20 @@ namespace ESP_flasher
             string com = cmb_Comname.Text;
             int baud = int.Parse(cmb_Baudrate.Text);
             Progress<float> progress = new Progress<float>((e) => progressBar1.InvokeIfRequired(() => progressBar1.Value = (int)(e * 100)));
-            Result result = await espTool.FlashFirmware(com, baud, fi, false, cancellationTokenSource.Token);
-            richTextBox1.AppendText($"Flashing firmware {(result.Success?"oke":"failed")}.");
+            Result result = await espTool.FlashFirmware(com, baud, fi, false, cancellationTokenSource.Token, progress);
+            richTextBox1.AppendText($"Flashing firmware {(result.Success?"oke":"failed")}. Error : '{result.Error}'\r\n");
             SetControlsEnabled(true);
         }
 
         public async void Erase()
         {
+            richTextBox1.Text = "";
             cancellationTokenSource = new CancellationTokenSource();
             SetControlsEnabled(false);
             string com = cmb_Comname.Text;
             int baud = int.Parse(cmb_Baudrate.Text);
             Result result = await espTool.Erase(com, baud, cancellationTokenSource.Token);
-            richTextBox1.AppendText($"Flashing firmware {(result.Success ? "oke" : "failed")}.");
+            richTextBox1.AppendText($"Flashing firmware {(result.Success ? "oke" : "failed")}. Error : '{result.Error}'\r\n");
             SetControlsEnabled(true);
         }
 
@@ -182,5 +184,4 @@ namespace ESP_flasher
         }
 
     }
-
 }
