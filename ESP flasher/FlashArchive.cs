@@ -153,7 +153,10 @@ namespace ESP_flasher
 
             string com = cmb_Comname.Text;
             int baud = int.Parse(cmb_Baudrate.Text);
-            Progress<float> progress = new Progress<float>((e) => progressBar1.InvokeIfRequired(() => progressBar1.Value = (int)(e * 100)));
+            Progress<float> progress = new Progress<float>((e) => {
+                progressBar1.InvokeIfRequired(() => progressBar1.Value = (int)(e * 100));
+                });
+
             Result result = await espTool.FlashFirmware(com, baud, fi, false, cancellationTokenSource.Token, progress);
             richTextBox1.AppendText($"Flashing firmware {(result.Success?"oke":"failed")}. Error : '{result.Error}'\r\n");
             SetControlsEnabled(true);
