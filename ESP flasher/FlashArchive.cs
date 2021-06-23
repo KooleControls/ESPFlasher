@@ -62,7 +62,21 @@ namespace ESP_flasher
         {
             cmb_Comname.Items.Clear();
             cmb_Comname.Items.AddRange(SerialPort.GetPortNames());
-            if (cmb_Comname.Items.Count > 0)
+
+            string[] preference = new string[] { "COM30" };
+
+            int ind = -1;
+
+            foreach (string p in preference)
+            {
+                ind = cmb_Comname.Items.IndexOf(p);
+                if (ind != -1)
+                    break;
+            }
+
+            if(ind != -1)
+                cmb_Comname.SelectedIndex = ind;
+            else if (cmb_Comname.Items.Count > 0)
                 cmb_Comname.SelectedIndex = 0;
         }
 
