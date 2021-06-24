@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.ckb_UseCompression = new System.Windows.Forms.CheckBox();
             this.btn_Cancel = new System.Windows.Forms.Button();
             this.btn_Erase = new System.Windows.Forms.Button();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
@@ -43,7 +44,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.cmb_Comname = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.ckb_UseCompression = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -66,6 +66,18 @@
             this.groupBox3.TabIndex = 12;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Flash";
+            // 
+            // ckb_UseCompression
+            // 
+            this.ckb_UseCompression.AutoSize = true;
+            this.ckb_UseCompression.Checked = true;
+            this.ckb_UseCompression.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ckb_UseCompression.Location = new System.Drawing.Point(168, 23);
+            this.ckb_UseCompression.Name = "ckb_UseCompression";
+            this.ckb_UseCompression.Size = new System.Drawing.Size(107, 17);
+            this.ckb_UseCompression.TabIndex = 10;
+            this.ckb_UseCompression.Text = "Use compression";
+            this.ckb_UseCompression.UseVisualStyleBackColor = true;
             // 
             // btn_Cancel
             // 
@@ -216,16 +228,6 @@
             this.label2.Size = new System.Drawing.Size(50, 13);
             this.label2.TabIndex = 2;
             this.label2.Text = "Baudrate";
-            // 
-            // checkBox1
-            // 
-            this.ckb_UseCompression.AutoSize = true;
-            this.ckb_UseCompression.Location = new System.Drawing.Point(168, 23);
-            this.ckb_UseCompression.Name = "checkBox1";
-            this.ckb_UseCompression.Size = new System.Drawing.Size(107, 17);
-            this.ckb_UseCompression.TabIndex = 10;
-            this.ckb_UseCompression.Text = "Use compression";
-            this.ckb_UseCompression.UseVisualStyleBackColor = true;
             // 
             // FlashArchive
             // 

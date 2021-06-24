@@ -172,8 +172,8 @@ namespace ESP_flasher
                 });
 
             Result result = await espTool.FlashFirmware(com, baud, fi, ckb_UseCompression.Checked, cancellationTokenSource.Token, progress);
-            richTextBox1.AppendText($"Flashing firmware {(result.Success?"oke":"failed")}. Error : '{result.Error}'\r\n");
             SetControlsEnabled(true);
+
         }
 
         public async void Erase()
