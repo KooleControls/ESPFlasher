@@ -171,7 +171,7 @@ namespace ESP_flasher
                 progressBar1.InvokeIfRequired(() => progressBar1.Value = (int)(e * 100));
                 });
 
-            Result result = await espTool.FlashFirmware(com, baud, fi, false, cancellationTokenSource.Token, progress);
+            Result result = await espTool.FlashFirmware(com, baud, fi, ckb_UseCompression.Checked, cancellationTokenSource.Token, progress);
             richTextBox1.AppendText($"Flashing firmware {(result.Success?"oke":"failed")}. Error : '{result.Error}'\r\n");
             SetControlsEnabled(true);
         }
