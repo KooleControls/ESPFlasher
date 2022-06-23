@@ -85,8 +85,8 @@ namespace ESP_flasher
                             if(m.Success)
                             {
                                 Directory.CreateDirectory(Settings.DefaultReleaseFolder);
-                                string version = $"{m.Groups[1].Value}_{m.Groups[2].Value}_{m.Groups[3].Value}";
-                                string releaseDir = Path.Combine(Settings.DefaultReleaseFolder, version);
+                                string version = $"{m.Groups[1].Value.PadLeft(2,'0')}_{m.Groups[2].Value.PadLeft(2, '0')}_{m.Groups[3].Value.PadLeft(2, '0')}";
+                                string releaseDir = Path.Combine(Settings.DefaultReleaseFolder, "V" + version.Replace('_', '.'));
 
                                 if(!Directory.Exists(releaseDir))
                                 {
