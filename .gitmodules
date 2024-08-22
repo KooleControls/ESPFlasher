@@ -1,0 +1,6 @@
+[submodule "ESPTool"]
+	path = ESPTool
+	url = https://github.com/KooleControls/ESPTool.git
+[submodule "NET_Library"]
+	path = NET_Library
+	url = https://github.com/vanBassum/NET_Library.git
