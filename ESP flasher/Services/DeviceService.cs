@@ -65,35 +65,37 @@ namespace ESP_Flasher.Services
                 throw new Exception("Device initialisation failed");
 
             // Calculate the total size of all entries
-            long totalSize = archive.Entries.Sum(entry => entry.Size);
+            long totalSize = archive.Entries.Sum(entry => entry.Contents.Length);
             long bytesUploaded = 0; // Track the number of bytes uploaded so far
 
             foreach (var entry in archive.Entries)
             {
-                await _archiveService.UseFileStream(archive, entry.File, async (stream, size) =>
+                using MemoryStream stream = new MemoryStream(entry.Contents);
+                UInt32 size = (UInt32)entry.Contents.Length;
+
+                _logger.LogError($"Uploading {entry.File}, {size} bytes");
+
+                var entryProgress = new Progress<float>(entryProgressValue =>
                 {
-                    _logger.LogError($"Uploading {entry.File}, {size} bytes");
-
-                    var entryProgress = new Progress<float>(entryProgressValue =>
-                    {
-                        // Adjust entry progress to reflect overall progress
-                        float overallProgress = ((float)bytesUploaded + entryProgressValue * size) / totalSize;
-                        progress?.Report(overallProgress);
-                    });
-
-                    if (UseCompression)
-                        await _device.UploadCompressedToFlashAsync(stream, (UInt32)size, (UInt32)entry.Address, token, entryProgress);
-                    else
-                        await _device.UploadToFlashAsync(stream, (UInt32)size, (UInt32)entry.Address, token, entryProgress);
+                    // Adjust entry progress to reflect overall progress
+                    float overallProgress = ((float)bytesUploaded + entryProgressValue * size) / totalSize;
+                    progress?.Report(overallProgress);
                 });
 
-                // After each entry is uploaded, update the total bytes uploaded
-                bytesUploaded += entry.Size;
-
                 if (UseCompression)
+                {
+                    await _device.UploadCompressedToFlashAsync(stream, size, (UInt32)entry.Address, token, entryProgress);
                     await _device.UploadCompressedToFlashFinishAsync(false, 0, token);
+                }
                 else
+                {
+                    await _device.UploadToFlashAsync(stream, size, (UInt32)entry.Address, token, entryProgress);
                     await _device.UploadToFlashFinishAsync(false, 0, token);
+                }
+                   
+
+                // After each entry is uploaded, update the total bytes uploaded
+                bytesUploaded += size;
             }
 
             await _device.ResetDeviceAsync(token); // Reset the device after flashing

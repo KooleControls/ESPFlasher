@@ -20,18 +20,18 @@ namespace ESP_Flasher.UIBinders
             _listView.Columns.Add("Size", 100);
         }
 
-        public void Populate(List<BinFile> entries)
+        public void Populate(FirmwareArchive archive)
         {
             _listView.Items.Clear();
 
-            foreach (var entry in entries)
+            foreach (var entry in archive.Entries)
             {
                 // Create a ListViewItem for each entry
                 ListViewItem item = new ListViewItem(entry.File);
 
                 // Format the address and size as hexadecimal
                 item.SubItems.Add($"0x{entry.Address:X}");  // Address as hexadecimal
-                item.SubItems.Add($"0x{entry.Size:X}");     // Size as hexadecimal
+                item.SubItems.Add($"0x{entry.Contents.Length:X}");     // Size as hexadecimal
 
                 _listView.Items.Add(item);
             }

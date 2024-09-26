@@ -7,11 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.IO.Ports;
 using System.Text;
+using System.Windows.Forms;
 
 namespace ESP_Flasher
 {
     public partial class Form1 : Form
     {
+        // Constants
+        private readonly string archiveFileFilter = "Firmware archive|*.kczip";
+        private readonly string hexFileFilter = "Binary file|*.bin";
+        private readonly string buildArgsFileFilter = "flash_project_args|flash_project_args";
+
         // Services
         private readonly ArchiveService _archiveService;
         private readonly DeviceService _flashingService;
@@ -24,7 +30,7 @@ namespace ESP_Flasher
         private readonly ProgressBarBinder _progressBarBinder;
 
         // Variables
-        FirmwareArchive? openArchive;
+        FirmwareArchive openArchive;
         CancellationTokenSource? cancelButtonSource;
         ILogger<Form1> logger;
 
@@ -36,7 +42,7 @@ namespace ESP_Flasher
             _richTextBoxLoggerFactory = new RichTextBoxLoggerFactory(richTextBox1);
 
             // Instantiate services with the logger factory
-            _archiveService = new ArchiveService();
+            _archiveService = new ArchiveService(_richTextBoxLoggerFactory);
             _flashingService = new DeviceService(_archiveService, _richTextBoxLoggerFactory);
 
             // Bind the UI elements to data
@@ -47,31 +53,74 @@ namespace ESP_Flasher
 
             // Set variables;
             logger = _richTextBoxLoggerFactory.CreateLogger<Form1>();
+            openArchive = new FirmwareArchive();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            toolStrip1.AddMenuItem("File/Open", OpenArchiveDialog);
+            toolStrip1.AddMenuItem("File/New", NewArchive);
+            toolStrip1.AddMenuItem("File/Open Archive", OpenArchiveDialog);
+            //toolStrip1.AddMenuItem("File/Open Build folder", CreateArchiveFromBuild);
+            //toolStrip1.AddMenuItem("File/Save as/Archive", SaveArchive);
+            //toolStrip1.AddMenuItem("File/Save as/Hex", SaveArchiveHex);
+            toolStrip1.AddMenuItem("File/Exit", Close);
+
         }
 
-        // Opens the archive file dialog and populates the data using binders
-        private void OpenArchiveDialog()
+        private void NewArchive()
         {
-            openArchive = _archiveService.LoadArchive();
+            openArchive = new FirmwareArchive();
+            _archiveBinder.Populate(openArchive);
+            _partitionBinder.Populate(openArchive);
+        }
 
-            if (openArchive == null)
-            {
-                logger.LogError("Failed to load archive.");
+        private async void OpenArchiveDialog()
+        {
+            using OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = archiveFileFilter;
+
+            if (dialog.ShowDialog() != DialogResult.OK)
                 return;
-            }
+            
+            openArchive = await _archiveService.LoadFromZip(dialog.FileName) ?? openArchive;
+            _archiveBinder.Populate(openArchive);
+            _partitionBinder.Populate(openArchive);
+        }
 
-            // Use binders to populate UI elements
-            _archiveBinder.Populate(openArchive.Entries);
+        private async void CreateArchiveFromBuild()
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = buildArgsFileFilter;
+            if (dialog.ShowDialog() != DialogResult.OK)
+                return;
 
-            if (openArchive.PartitionTable != null)
-            {
-                _partitionBinder.Populate(openArchive.PartitionTable);
-            }
+            openArchive = await _archiveService.LoadFromBuildDirectory(dialog.FileName) ?? openArchive;
+            _archiveBinder.Populate(openArchive);
+            _partitionBinder.Populate(openArchive);
+        }
+
+        private async void SaveArchive()
+        {
+            using SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = archiveFileFilter;
+
+            if (dialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            using Stream stream = dialog.OpenFile();
+            await _archiveService.SaveArchive(stream, openArchive);
+        }
+
+        private async void SaveArchiveHex()
+        {
+            using SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = hexFileFilter;
+
+            if (dialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            using Stream stream = dialog.OpenFile();
+            await _archiveService.SaveArchiveHex(stream, openArchive);
         }
 
         private void buttonRefresh_Click(object sender, EventArgs e)
@@ -89,7 +138,7 @@ namespace ESP_Flasher
             }
             catch (Exception ex)
             {
-                logger.LogError($"Failed to erase flash {ex.Message}");
+                logger.LogError(ex, $"Failed to erase flash");
             }
             finally
             {
@@ -116,7 +165,7 @@ namespace ESP_Flasher
             }
             catch (Exception ex)
             {
-                logger.LogError($"Failed to erase flash {ex.Message}");
+                logger.LogError(ex, $"Failed to upload flash");
             }
             finally
             {

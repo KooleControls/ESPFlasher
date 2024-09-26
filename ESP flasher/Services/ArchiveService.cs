@@ -1,52 +1,50 @@
 ﻿using ESP_Flasher.Models;
 using ESP_Flasher.Parsers;
-using ESP_Flasher.UIBinders;
-using System.IO.Compression;
-using System.IO;
-using System.Windows.Forms;
+using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
+using System.Web;
 
 namespace ESP_Flasher.Services
 {
     public class ArchiveService
     {
-        private readonly string _archiveFilter = "Firmware archive|*.kczip";
+        private readonly ILogger<ArchiveService> _logger;
+        private readonly FirmwareArchiveLoader _zipLoader;
+        private readonly BuildFolderArchiveLoader _buildLoader;
 
-        // Load the archive from the file dialog
-        public FirmwareArchive? LoadArchive()
+        public ArchiveService(ILoggerFactory loggerFactory)
         {
-            using OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = _archiveFilter;
-
-            if (openFileDialog.ShowDialog() != DialogResult.OK)
-                return null;
-
-            using FileStream fileStream = File.OpenRead(openFileDialog.FileName);
-            FirmwareArchiveLoader archiveLoader = new FirmwareArchiveLoader();
-            FirmwareArchive? archive = archiveLoader.Parse(fileStream);
-            if (archive != null)
-                archive.ZipFile = openFileDialog.FileName;
-            return archive;
+            _logger = loggerFactory.CreateLogger<ArchiveService>();
+            _zipLoader = new FirmwareArchiveLoader(loggerFactory);
+            _buildLoader = new BuildFolderArchiveLoader(loggerFactory);
         }
 
-        public async Task UseFileStream(FirmwareArchive archive, string fileName, Func<Stream, long, Task> streamAction)
+        // Load archive from ZIP
+        public async Task<FirmwareArchive?> LoadFromZip(string zipFile, CancellationToken token = default)
         {
-            using FileStream fileStream = File.OpenRead(archive.ZipFile);
-            using ZipArchive archiveZip = new ZipArchive(fileStream, ZipArchiveMode.Read, leaveOpen: true);
-            ZipArchiveEntry? entry = archiveZip.GetEntry(fileName) ?? throw new Exception("File not found");
+            return await _zipLoader.LoadFromZip(zipFile, token);
+        }
 
-            using Stream entryStream = entry.Open();
-            using MemoryStream copyStream = new MemoryStream();
-            entryStream.CopyTo(copyStream); 
-            copyStream.Position = 0;
-            // Invoke the action on the opened stream
-            await streamAction(copyStream, entry.Length);
+        // Load archive from Build Directory
+        public async Task<FirmwareArchive?> LoadFromBuildDirectory(string argsFilePath, CancellationToken token = default)
+        {
+            return await _buildLoader.LoadFromBuildDirectory(argsFilePath, token);
         }
 
 
 
+        public async Task SaveArchive(Stream stream, FirmwareArchive archive)
+        {
+        
+        }
+        
+        public async Task SaveArchiveHex(Stream stream, FirmwareArchive archive)
+        {
+        
+        }
 
 
     }
 
-} 
+}
 

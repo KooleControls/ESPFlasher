@@ -4,7 +4,7 @@
     {
         public int Address { get; set; }
         public string File { get; set; } = string.Empty;
-        public long Size { get; set; }
+        public byte[] Contents { get; set; } = new byte[0];
     }
 
 
