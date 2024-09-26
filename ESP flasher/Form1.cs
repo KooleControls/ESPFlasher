@@ -1,114 +1,145 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Newtonsoft.Json;
-using System.IO.Compression;
-using System.Diagnostics;
+using ESP_Flasher.Logging;
+using ESP_Flasher.Models;
+using ESP_Flasher.Services;
+using ESP_Flasher.UIBinders;
+using FRMLib;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.IO.Ports;
-using System.Text.RegularExpressions;
-using System.Reflection;
-using System.Globalization;
-using CmdArgParser;
-using ESP_flasher.Properties;
+using System.Text;
 
-namespace ESP_flasher
+namespace ESP_Flasher
 {
     public partial class Form1 : Form
     {
-        readonly string archiveFilter = "Binary file|*.kczip";
-        readonly string hexFilter = "Intel hex file|*.hex";
+        // Services
+        private readonly ArchiveService _archiveService;
+        private readonly DeviceService _flashingService;
 
-        readonly string tempFolderDevelopment = Path.Combine(Path.GetTempPath(), "Koole controls", "ESP flasher", "tempCreate");
-        readonly string tempFolderFlash = Path.Combine(Path.GetTempPath(), "Koole controls", "ESP flasher", "tempFlash");
+        // Binders
+        private readonly SerialPortBinder _serialPortBinder;
+        private readonly ArchiveListViewBinder _archiveBinder;
+        private readonly PartitionTableListViewBinder _partitionBinder;
+        private readonly RichTextBoxLoggerFactory _richTextBoxLoggerFactory;
+        private readonly ProgressBarBinder _progressBarBinder;
 
-
+        // Variables
+        FirmwareArchive? openArchive;
+        CancellationTokenSource? cancelButtonSource;
+        ILogger<Form1> logger;
 
         public Form1()
         {
             InitializeComponent();
-            flashArchive1.ArchiveFilter = archiveFilter;
-            flashArchive1.TempFolder = tempFolderFlash;
-            createArchives1.ArchiveFilter = archiveFilter;
-            createArchives1.HexFilter = hexFilter;
-            createArchives1.TempFolder = tempFolderDevelopment;
-        }
 
-        CommandlineOptions opts;
+            // Create the RichTextBoxLoggerFactory
+            _richTextBoxLoggerFactory = new RichTextBoxLoggerFactory(richTextBox1);
+
+            // Instantiate services with the logger factory
+            _archiveService = new ArchiveService();
+            _flashingService = new DeviceService(_archiveService, _richTextBoxLoggerFactory);
+
+            // Bind the UI elements to data
+            _serialPortBinder = new SerialPortBinder(comboBoxSerialPort, comboBoxBaudRate);
+            _archiveBinder = new ArchiveListViewBinder(listViewHexFiles);
+            _partitionBinder = new PartitionTableListViewBinder(listViewPartitionTable);
+            _progressBarBinder = new ProgressBarBinder(progressBar1);
+
+            // Set variables;
+            logger = _richTextBoxLoggerFactory.CreateLogger<Form1>();
+        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Settings.Load(true);
+            toolStrip1.AddMenuItem("File/Open", OpenArchiveDialog);
+        }
 
-            Version vers = Assembly.GetExecutingAssembly().GetName().Version;
-            this.Text += $" V{vers.Major.ToString("D2")}.{vers.Minor.ToString("D2")}.{vers.Build.ToString("D2")}";
+        // Opens the archive file dialog and populates the data using binders
+        private void OpenArchiveDialog()
+        {
+            openArchive = _archiveService.LoadArchive();
 
-            CommandlineParser.ShowHelp<CommandlineOptions>();
-            opts = CommandlineParser.Parse<CommandlineOptions>();
-
-
-            if (opts.Baudrate != null)
-                flashArchive1.SetCom_Baud(opts.Baudrate);
-
-            if (opts.Port != null)
-                flashArchive1.SetCom_Port(opts.Port);
-
-            if (opts.File != null)
-                flashArchive1.OpenFile(opts.File);
-
-            if (opts.Erase)
-                flashArchive1.Erase();
-
-            if (opts.Flash)
-                flashArchive1.Program();
-
-
-            if(Settings.AutoReleaseOnStart)
+            if (openArchive == null)
             {
-                tabControl1.SelectedIndex = 1;
-                if (File.Exists(Settings.PathToFlashProjectArgs))
-                {
-                    createArchives1.OpenFlash_project_args(Settings.PathToFlashProjectArgs);
-
-                    if (File.Exists(Settings.PathToVersionC))
-                    {
-                        using (StreamReader reader = new StreamReader(Settings.PathToVersionC))
-                        {
-                            string s = reader.ReadToEnd();
-                            Match m = Regex.Match(s, Settings.VersionRegex);
-
-                            if(m.Success)
-                            {
-                                Directory.CreateDirectory(Settings.DefaultReleaseFolder);
-                                string version = $"{m.Groups[1].Value.PadLeft(2,'0')}_{m.Groups[2].Value.PadLeft(2, '0')}_{m.Groups[3].Value.PadLeft(2, '0')}";
-                                string releaseDir = Path.Combine(Settings.DefaultReleaseFolder, "V" + version.Replace('_', '.'));
-
-                                if(!Directory.Exists(releaseDir))
-                                {
-                                    if(createArchives1.BinFound())
-                                    {
-                                        Directory.CreateDirectory(releaseDir);
-
-                                        string hex = Path.Combine(releaseDir, Settings.HexFileName.Replace("{version}", version));
-                                        string kczip = Path.Combine(releaseDir, Settings.KCZipFileName.Replace("{version}", version));
-
-                                        createArchives1.CreateHex(hex);
-                                        createArchives1.CreateZip(kczip);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                logger.LogError("Failed to load archive.");
+                return;
             }
+
+            // Use binders to populate UI elements
+            _archiveBinder.Populate(openArchive.Entries);
+
+            if (openArchive.PartitionTable != null)
+            {
+                _partitionBinder.Populate(openArchive.PartitionTable);
+            }
+        }
+
+        private void buttonRefresh_Click(object sender, EventArgs e)
+        {
+            _serialPortBinder?.LoadSerialPorts();
+        }
+
+        private async void buttonErase_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                UiEnabled(false);
+                cancelButtonSource = new CancellationTokenSource();
+                await _flashingService.EraseFlashAsync(cancelButtonSource.Token);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Failed to erase flash {ex.Message}");
+            }
+            finally
+            {
+                UiEnabled(true);
+            }
+        }
+
+        private async void buttonProgram_Click(object sender, EventArgs e)
+        {
+            if (openArchive == null)
+            {
+                logger.LogError($"No archive opened");
+                return;
+            }
+                
+            try
+            {
+                UiEnabled(false);
+                cancelButtonSource = new CancellationTokenSource();
+                _flashingService.UseCompression = checkBoxCompression.Checked;
+                _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
+                _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
+                await _flashingService.FlashAsync(openArchive, cancelButtonSource.Token, _progressBarBinder.Bind());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Failed to erase flash {ex.Message}");
+            }
+            finally
+            {
+                _progressBarBinder.Bind().Report(0);
+                UiEnabled(true);
+            }
+        }
+
+        private void UiEnabled(bool enabled)
+        {
+            groupBoxArchive.Enabled = enabled;
+            groupBoxSerial.Enabled = enabled;   
+            groupBoxLog.Enabled = enabled;
+            groupBoxActions.Enabled = enabled;
+
+            groupBoxProgress.Enabled = !enabled;
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            cancelButtonSource?.Cancel();
         }
     }
 
 }
-
 
