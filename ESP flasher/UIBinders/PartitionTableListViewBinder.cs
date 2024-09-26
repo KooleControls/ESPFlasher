@@ -15,11 +15,11 @@ namespace ESP_Flasher.UIBinders
         private void SetupColumns()
         {
             _listView.Columns.Clear();
+            _listView.Columns.Add("Name", 200);
             _listView.Columns.Add("Type", 100);
             _listView.Columns.Add("Subtype", 100);
             _listView.Columns.Add("Address", 100);
             _listView.Columns.Add("Size", 100);
-            _listView.Columns.Add("Name", 200);
         }
 
         public void Populate(PartitionTable partitionTable)
@@ -28,11 +28,14 @@ namespace ESP_Flasher.UIBinders
 
             foreach (var partition in partitionTable.Partitions)
             {
-                ListViewItem item = new ListViewItem(partition.Type.ToString());
-                item.SubItems.Add(partition.Subtype.ToString());
-                item.SubItems.Add(partition.Address.ToString("X"));
-                item.SubItems.Add(partition.Size.ToString());
-                item.SubItems.Add(partition.Name);
+                // Create a ListViewItem for each entry
+                ListViewItem item = new ListViewItem(partition.Name);
+
+                // Format the address and size as hexadecimal
+                item.SubItems.Add($"0x{partition.Type:X}");
+                item.SubItems.Add($"0x{partition.Subtype:X}");
+                item.SubItems.Add($"0x{partition.Address:X}");
+                item.SubItems.Add($"0x{partition.Size:X}");
 
                 _listView.Items.Add(item);
             }

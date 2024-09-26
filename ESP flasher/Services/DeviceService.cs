@@ -55,16 +55,14 @@ namespace ESP_Flasher.Services
                 _logger.LogError($"Starting softloader");
                 await _device.StartSoftloaderAsync(token);
             }
-
-
-
         }
 
         // Flash the firmware to the device
         public async Task FlashAsync(FirmwareArchive archive, CancellationToken token = default, IProgress<float> progress = null)
         {
+            await InitializeDevice(token);
             if (_device == null)
-                await InitializeDevice(token);
+                throw new Exception("Device initialisation failed");
 
             // Calculate the total size of all entries
             long totalSize = archive.Entries.Sum(entry => entry.Size);
@@ -104,9 +102,9 @@ namespace ESP_Flasher.Services
         // Erase the firmware from the device
         public async Task EraseFlashAsync(CancellationToken token = default)
         {
+            await InitializeDevice(token);
             if (_device == null)
-                await InitializeDevice(token);
-
+                throw new Exception("Device initialisation failed");
             await _device.EraseFlashAsync(token);
         }
     }

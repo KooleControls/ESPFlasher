@@ -15,8 +15,9 @@ namespace ESP_Flasher.UIBinders
         private void SetupColumns()
         {
             _listView.Columns.Clear();
-            _listView.Columns.Add("Address", 100);
             _listView.Columns.Add("FileName", 200);
+            _listView.Columns.Add("Address", 100);
+            _listView.Columns.Add("Size", 100);
         }
 
         public void Populate(List<BinFile> entries)
@@ -25,8 +26,12 @@ namespace ESP_Flasher.UIBinders
 
             foreach (var entry in entries)
             {
-                ListViewItem item = new ListViewItem(entry.Address.ToString("X"));  // Display address as hex
-                item.SubItems.Add(entry.File);
+                // Create a ListViewItem for each entry
+                ListViewItem item = new ListViewItem(entry.File);
+
+                // Format the address and size as hexadecimal
+                item.SubItems.Add($"0x{entry.Address:X}");  // Address as hexadecimal
+                item.SubItems.Add($"0x{entry.Size:X}");     // Size as hexadecimal
 
                 _listView.Items.Add(item);
             }

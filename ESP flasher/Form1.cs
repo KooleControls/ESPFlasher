@@ -4,6 +4,7 @@ using ESP_Flasher.Services;
 using ESP_Flasher.UIBinders;
 using FRMLib;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.IO.Ports;
 using System.Text;
 
@@ -24,6 +25,8 @@ namespace ESP_Flasher
 
         // Variables
         FirmwareArchive? openArchive;
+        CancellationTokenSource? cancelButtonSource;
+        ILogger<Form1> logger;
 
         public Form1()
         {
@@ -41,6 +44,9 @@ namespace ESP_Flasher
             _archiveBinder = new ArchiveListViewBinder(listViewHexFiles);
             _partitionBinder = new PartitionTableListViewBinder(listViewPartitionTable);
             _progressBarBinder = new ProgressBarBinder(progressBar1);
+
+            // Set variables;
+            logger = _richTextBoxLoggerFactory.CreateLogger<Form1>();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -55,7 +61,7 @@ namespace ESP_Flasher
 
             if (openArchive == null)
             {
-                MessageBox.Show("Failed to load archive.");
+                logger.LogError("Failed to load archive.");
                 return;
             }
 
@@ -75,32 +81,64 @@ namespace ESP_Flasher
 
         private async void buttonErase_Click(object sender, EventArgs e)
         {
-            UiEnabled(false);
-            await _flashingService.EraseFlashAsync();
-            UiEnabled(true);
+            try
+            {
+                UiEnabled(false);
+                cancelButtonSource = new CancellationTokenSource();
+                await _flashingService.EraseFlashAsync(cancelButtonSource.Token);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Failed to erase flash {ex.Message}");
+            }
+            finally
+            {
+                UiEnabled(true);
+            }
         }
 
         private async void buttonProgram_Click(object sender, EventArgs e)
         {
-            if(openArchive == null)
+            if (openArchive == null)
+            {
+                logger.LogError($"No archive opened");
                 return;
-            UiEnabled(false);
-            _flashingService.UseCompression = checkBoxCompression.Checked;
-            _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
-            _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
-            await _flashingService.FlashAsync(openArchive, default, _progressBarBinder.Bind());
-            UiEnabled(true);
+            }
+                
+            try
+            {
+                UiEnabled(false);
+                cancelButtonSource = new CancellationTokenSource();
+                _flashingService.UseCompression = checkBoxCompression.Checked;
+                _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
+                _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
+                await _flashingService.FlashAsync(openArchive, cancelButtonSource.Token, _progressBarBinder.Bind());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Failed to erase flash {ex.Message}");
+            }
+            finally
+            {
+                _progressBarBinder.Bind().Report(0);
+                UiEnabled(true);
+            }
         }
 
         private void UiEnabled(bool enabled)
         {
-            buttonErase.Enabled = enabled;
-            buttonProgram.Enabled = enabled;
-            buttonRefresh.Enabled = enabled;
-            checkBoxCompression.Enabled = enabled;
+            groupBoxArchive.Enabled = enabled;
+            groupBoxSerial.Enabled = enabled;   
+            groupBoxLog.Enabled = enabled;
+            groupBoxActions.Enabled = enabled;
+
+            groupBoxProgress.Enabled = !enabled;
         }
 
-
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            cancelButtonSource?.Cancel();
+        }
     }
 
 }

@@ -28,40 +28,43 @@
         /// </summary>
         private void InitializeComponent()
         {
-            groupBox2 = new GroupBox();
+            groupBoxArchive = new GroupBox();
             listViewPartitionTable = new ListView();
             listViewHexFiles = new ListView();
-            groupBox3 = new GroupBox();
+            groupBoxActions = new GroupBox();
+            buttonCancel = new Button();
             progressBar1 = new ProgressBar();
             checkBoxCompression = new CheckBox();
             buttonErase = new Button();
             buttonProgram = new Button();
-            groupBox1 = new GroupBox();
+            groupBoxLog = new GroupBox();
             richTextBox1 = new RichTextBox();
             label1 = new Label();
             label2 = new Label();
             comboBoxBaudRate = new ComboBox();
             comboBoxSerialPort = new ComboBox();
             buttonRefresh = new Button();
-            groupBox4 = new GroupBox();
+            groupBoxSerial = new GroupBox();
             toolStrip1 = new ToolStrip();
-            groupBox2.SuspendLayout();
-            groupBox3.SuspendLayout();
-            groupBox1.SuspendLayout();
-            groupBox4.SuspendLayout();
+            groupBoxProgress = new GroupBox();
+            groupBoxArchive.SuspendLayout();
+            groupBoxActions.SuspendLayout();
+            groupBoxLog.SuspendLayout();
+            groupBoxSerial.SuspendLayout();
+            groupBoxProgress.SuspendLayout();
             SuspendLayout();
             // 
-            // groupBox2
+            // groupBoxArchive
             // 
-            groupBox2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            groupBox2.Controls.Add(listViewPartitionTable);
-            groupBox2.Controls.Add(listViewHexFiles);
-            groupBox2.Location = new Point(12, 28);
-            groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(816, 229);
-            groupBox2.TabIndex = 1;
-            groupBox2.TabStop = false;
-            groupBox2.Text = "Archive";
+            groupBoxArchive.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxArchive.Controls.Add(listViewPartitionTable);
+            groupBoxArchive.Controls.Add(listViewHexFiles);
+            groupBoxArchive.Location = new Point(12, 28);
+            groupBoxArchive.Name = "groupBoxArchive";
+            groupBoxArchive.Size = new Size(816, 229);
+            groupBoxArchive.TabIndex = 1;
+            groupBoxArchive.TabStop = false;
+            groupBoxArchive.Text = "Archive";
             // 
             // listViewPartitionTable
             // 
@@ -83,26 +86,36 @@
             listViewHexFiles.UseCompatibleStateImageBehavior = false;
             listViewHexFiles.View = View.Details;
             // 
-            // groupBox3
+            // groupBoxActions
             // 
-            groupBox3.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            groupBox3.Controls.Add(progressBar1);
-            groupBox3.Controls.Add(checkBoxCompression);
-            groupBox3.Controls.Add(buttonErase);
-            groupBox3.Controls.Add(buttonProgram);
-            groupBox3.Location = new Point(12, 355);
-            groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(816, 84);
-            groupBox3.TabIndex = 2;
-            groupBox3.TabStop = false;
-            groupBox3.Text = "Actions";
+            groupBoxActions.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxActions.Controls.Add(checkBoxCompression);
+            groupBoxActions.Controls.Add(buttonErase);
+            groupBoxActions.Controls.Add(buttonProgram);
+            groupBoxActions.Location = new Point(12, 355);
+            groupBoxActions.Name = "groupBoxActions";
+            groupBoxActions.Size = new Size(816, 54);
+            groupBoxActions.TabIndex = 2;
+            groupBoxActions.TabStop = false;
+            groupBoxActions.Text = "Actions";
+            // 
+            // buttonCancel
+            // 
+            buttonCancel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonCancel.Location = new Point(735, 22);
+            buttonCancel.Name = "buttonCancel";
+            buttonCancel.Size = new Size(75, 23);
+            buttonCancel.TabIndex = 13;
+            buttonCancel.Text = "Cancel";
+            buttonCancel.UseVisualStyleBackColor = true;
+            buttonCancel.Click += buttonCancel_Click;
             // 
             // progressBar1
             // 
             progressBar1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            progressBar1.Location = new Point(6, 52);
+            progressBar1.Location = new Point(6, 22);
             progressBar1.Name = "progressBar1";
-            progressBar1.Size = new Size(804, 23);
+            progressBar1.Size = new Size(723, 23);
             progressBar1.TabIndex = 12;
             // 
             // checkBoxCompression
@@ -137,16 +150,16 @@
             buttonProgram.UseVisualStyleBackColor = true;
             buttonProgram.Click += buttonProgram_Click;
             // 
-            // groupBox1
+            // groupBoxLog
             // 
-            groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            groupBox1.Controls.Add(richTextBox1);
-            groupBox1.Location = new Point(12, 445);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(816, 171);
-            groupBox1.TabIndex = 3;
-            groupBox1.TabStop = false;
-            groupBox1.Text = "Log";
+            groupBoxLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxLog.Controls.Add(richTextBox1);
+            groupBoxLog.Location = new Point(12, 477);
+            groupBoxLog.Name = "groupBoxLog";
+            groupBoxLog.Size = new Size(816, 253);
+            groupBoxLog.TabIndex = 3;
+            groupBoxLog.TabStop = false;
+            groupBoxLog.Text = "Log";
             // 
             // richTextBox1
             // 
@@ -154,7 +167,7 @@
             richTextBox1.Location = new Point(6, 22);
             richTextBox1.Name = "richTextBox1";
             richTextBox1.ReadOnly = true;
-            richTextBox1.Size = new Size(804, 143);
+            richTextBox1.Size = new Size(804, 225);
             richTextBox1.TabIndex = 0;
             richTextBox1.Text = "";
             // 
@@ -205,20 +218,20 @@
             buttonRefresh.UseVisualStyleBackColor = true;
             buttonRefresh.Click += buttonRefresh_Click;
             // 
-            // groupBox4
+            // groupBoxSerial
             // 
-            groupBox4.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            groupBox4.Controls.Add(comboBoxBaudRate);
-            groupBox4.Controls.Add(buttonRefresh);
-            groupBox4.Controls.Add(label1);
-            groupBox4.Controls.Add(label2);
-            groupBox4.Controls.Add(comboBoxSerialPort);
-            groupBox4.Location = new Point(12, 263);
-            groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(816, 86);
-            groupBox4.TabIndex = 3;
-            groupBox4.TabStop = false;
-            groupBox4.Text = "Serial port";
+            groupBoxSerial.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxSerial.Controls.Add(comboBoxBaudRate);
+            groupBoxSerial.Controls.Add(buttonRefresh);
+            groupBoxSerial.Controls.Add(label1);
+            groupBoxSerial.Controls.Add(label2);
+            groupBoxSerial.Controls.Add(comboBoxSerialPort);
+            groupBoxSerial.Location = new Point(12, 263);
+            groupBoxSerial.Name = "groupBoxSerial";
+            groupBoxSerial.Size = new Size(816, 86);
+            groupBoxSerial.TabIndex = 3;
+            groupBoxSerial.TabStop = false;
+            groupBoxSerial.Text = "Serial port";
             // 
             // toolStrip1
             // 
@@ -228,40 +241,54 @@
             toolStrip1.TabIndex = 5;
             toolStrip1.Text = "toolStrip1";
             // 
+            // groupBoxProgress
+            // 
+            groupBoxProgress.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxProgress.Controls.Add(buttonCancel);
+            groupBoxProgress.Controls.Add(progressBar1);
+            groupBoxProgress.Location = new Point(12, 415);
+            groupBoxProgress.Name = "groupBoxProgress";
+            groupBoxProgress.Size = new Size(816, 56);
+            groupBoxProgress.TabIndex = 12;
+            groupBoxProgress.TabStop = false;
+            groupBoxProgress.Text = "Progress";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(840, 628);
+            ClientSize = new Size(840, 742);
+            Controls.Add(groupBoxProgress);
             Controls.Add(toolStrip1);
-            Controls.Add(groupBox4);
-            Controls.Add(groupBox1);
-            Controls.Add(groupBox3);
-            Controls.Add(groupBox2);
+            Controls.Add(groupBoxSerial);
+            Controls.Add(groupBoxLog);
+            Controls.Add(groupBoxActions);
+            Controls.Add(groupBoxArchive);
             Name = "Form1";
             Text = "Form1";
             Load += Form1_Load;
-            groupBox2.ResumeLayout(false);
-            groupBox3.ResumeLayout(false);
-            groupBox3.PerformLayout();
-            groupBox1.ResumeLayout(false);
-            groupBox4.ResumeLayout(false);
-            groupBox4.PerformLayout();
+            groupBoxArchive.ResumeLayout(false);
+            groupBoxActions.ResumeLayout(false);
+            groupBoxActions.PerformLayout();
+            groupBoxLog.ResumeLayout(false);
+            groupBoxSerial.ResumeLayout(false);
+            groupBoxSerial.PerformLayout();
+            groupBoxProgress.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
 
-        private GroupBox groupBox2;
-        private GroupBox groupBox3;
+        private GroupBox groupBoxArchive;
+        private GroupBox groupBoxActions;
         private ComboBox comboBoxSerialPort;
         private Label label2;
         private ComboBox comboBoxBaudRate;
         private Label label1;
-        private GroupBox groupBox1;
+        private GroupBox groupBoxLog;
         private Button buttonRefresh;
-        private GroupBox groupBox4;
+        private GroupBox groupBoxSerial;
         private ProgressBar progressBar1;
         private CheckBox checkBoxCompression;
         private Button buttonErase;
@@ -270,5 +297,7 @@
         private ListView listViewPartitionTable;
         private ListView listViewHexFiles;
         private ToolStrip toolStrip1;
+        private Button buttonCancel;
+        private GroupBox groupBoxProgress;
     }
 }
