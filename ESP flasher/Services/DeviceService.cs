@@ -1,9 +1,10 @@
 ﻿using ESP_Flasher.Models;
 using ESPTool.Devices;
 using Microsoft.Extensions.Logging;
-using System.Drawing;
 using System.IO;
-using System.Security.Policy;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ESP_Flasher.Services
 {
@@ -29,7 +30,8 @@ namespace ESP_Flasher.Services
 
         public async Task InitializeDevice(CancellationToken token = default)
         {
-            // Get the device, default baudrate is 115200
+            // Get the device, default baud rate is 115200
+            _logger.LogInformation("Initializing device on {SerialPort}", SerialPort);
             IDevice device = await _deviceManager.InitializeAsync(SerialPort, 115200, token);
 
             switch (device)
@@ -38,21 +40,21 @@ namespace ESP_Flasher.Services
                     _device = espDevice;
                     break;
                 default:
+                    _logger.LogError("Unsupported device type: {DeviceType}", device.GetType());
                     throw new Exception($"Device not supported {device.GetType()}");
             }
 
             // Change baud if required
             if (BaudRate != 115200)
             {
-                _logger.LogError($"Switch baudrate {BaudRate}");
+                _logger.LogInformation("Switching baud rate to {BaudRate}", BaudRate);
                 await _device.ChangeBaudAsync(BaudRate, token);
             }
 
-
-            // Start the softloader, if required
+            // Start the softloader if required
             if (UseSoftLoader)
             {
-                _logger.LogError($"Starting softloader");
+                _logger.LogInformation("Starting softloader");
                 await _device.StartSoftloaderAsync(token);
             }
         }
@@ -62,18 +64,21 @@ namespace ESP_Flasher.Services
         {
             await InitializeDevice(token);
             if (_device == null)
-                throw new Exception("Device initialisation failed");
+            {
+                _logger.LogError("Device initialization failed");
+                throw new Exception("Device initialization failed");
+            }
 
-            // Calculate the total size of all entries
+            // Calculate total size
             long totalSize = archive.Entries.Sum(entry => entry.Contents.Length);
-            long bytesUploaded = 0; // Track the number of bytes uploaded so far
+            long bytesUploaded = 0;
 
             foreach (var entry in archive.Entries)
             {
                 using MemoryStream stream = new MemoryStream(entry.Contents);
                 UInt32 size = (UInt32)entry.Contents.Length;
 
-                _logger.LogError($"Uploading {entry.File}, {size} bytes");
+                _logger.LogInformation($"Uploading {entry.File}, {size} bytes");
 
                 var entryProgress = new Progress<float>(entryProgressValue =>
                 {
@@ -82,20 +87,25 @@ namespace ESP_Flasher.Services
                     progress?.Report(overallProgress);
                 });
 
-                if (UseCompression)
+                try
                 {
-                    await _device.UploadCompressedToFlashAsync(stream, size, (UInt32)entry.Address, token, entryProgress);
-                    await _device.UploadCompressedToFlashFinishAsync(false, 0, token);
-                }
-                else
-                {
-                    await _device.UploadToFlashAsync(stream, size, (UInt32)entry.Address, token, entryProgress);
-                    await _device.UploadToFlashFinishAsync(false, 0, token);
-                }
-                   
+                    if (UseCompression)
+                    {
+                        await _device.UploadCompressedToFlashAsync(stream, size, (UInt32)entry.Address, false, 0, token, entryProgress);
+                    }
+                    else
+                    {
+                        await _device.UploadToFlashAsync(stream, size, (UInt32)entry.Address, false, 0, token, entryProgress);
+                    }
 
-                // After each entry is uploaded, update the total bytes uploaded
-                bytesUploaded += size;
+                    // Update the total bytes uploaded after each entry is successfully uploaded
+                    bytesUploaded += size;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to upload entry {File} to address {Address}", entry.File, entry.Address);
+                    throw;
+                }
             }
 
             await _device.ResetDeviceAsync(token); // Reset the device after flashing
@@ -106,9 +116,13 @@ namespace ESP_Flasher.Services
         {
             await InitializeDevice(token);
             if (_device == null)
-                throw new Exception("Device initialisation failed");
+            {
+                _logger.LogError("Device initialization failed");
+                throw new Exception("Device initialization failed");
+            }
+
+            _logger.LogInformation("Erasing flash...");
             await _device.EraseFlashAsync(token);
         }
     }
 }
-

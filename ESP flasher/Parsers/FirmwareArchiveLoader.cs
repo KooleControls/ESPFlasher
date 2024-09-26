@@ -24,13 +24,13 @@ namespace ESP_Flasher.Parsers
             try
             {
                 using Stream stream = File.OpenRead(zipFile);
-                using ZipArchive archiveZip = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+                using ZipArchive archiveZip = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
 
                 FirmwareArchive firmwareArchive = new FirmwareArchive
                 {
                     Entries = await LoadEntriesUsingSettingsJson(archiveZip, token),
                     PartitionTable = await LoadPartitionTable(archiveZip, token) ?? new PartitionTable()
-            };
+                };
 
                 return firmwareArchive;
             }
@@ -61,10 +61,13 @@ namespace ESP_Flasher.Parsers
                 foreach (var binFile in binFiles)
                 {
                     ZipArchiveEntry? entry = archiveZip.GetEntry(binFile.File) ?? throw new Exception($"File {binFile.File} not found in the archive.");
-                    using Stream entryStream = entry.Open();
                     binFile.Contents = new byte[entry.Length];
-                    await entryStream.ReadAsync(binFile.Contents, 0, binFile.Contents.Length, token);
+                    using MemoryStream copyStream = new MemoryStream(binFile.Contents);
+                    using Stream entryStream = entry.Open();
+                    await entryStream.CopyToAsync(copyStream, token);
+                    copyStream.Position = 0;
                 }
+
             }
             catch (Exception ex)
             {
