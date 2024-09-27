@@ -29,14 +29,17 @@
         private void InitializeComponent()
         {
             groupBoxArchive = new GroupBox();
-            listViewPartitionTable = new ListView();
+            splitContainer1 = new SplitContainer();
+            splitContainer2 = new SplitContainer();
             listViewHexFiles = new ListView();
+            listViewPartitionTable = new ListView();
+            listViewAppHeader = new ListView();
             groupBoxActions = new GroupBox();
-            buttonCancel = new Button();
-            progressBar1 = new ProgressBar();
             checkBoxCompression = new CheckBox();
             buttonErase = new Button();
             buttonProgram = new Button();
+            buttonCancel = new Button();
+            progressBar1 = new ProgressBar();
             groupBoxLog = new GroupBox();
             richTextBox1 = new RichTextBox();
             label1 = new Label();
@@ -48,6 +51,14 @@
             toolStrip1 = new ToolStrip();
             groupBoxProgress = new GroupBox();
             groupBoxArchive.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel1.SuspendLayout();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
+            splitContainer2.Panel1.SuspendLayout();
+            splitContainer2.Panel2.SuspendLayout();
+            splitContainer2.SuspendLayout();
             groupBoxActions.SuspendLayout();
             groupBoxLog.SuspendLayout();
             groupBoxSerial.SuspendLayout();
@@ -57,8 +68,7 @@
             // groupBoxArchive
             // 
             groupBoxArchive.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            groupBoxArchive.Controls.Add(listViewPartitionTable);
-            groupBoxArchive.Controls.Add(listViewHexFiles);
+            groupBoxArchive.Controls.Add(splitContainer1);
             groupBoxArchive.Location = new Point(12, 28);
             groupBoxArchive.Name = "groupBoxArchive";
             groupBoxArchive.Size = new Size(816, 229);
@@ -66,25 +76,68 @@
             groupBoxArchive.TabStop = false;
             groupBoxArchive.Text = "Archive";
             // 
+            // splitContainer1
+            // 
+            splitContainer1.Location = new Point(6, 22);
+            splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            splitContainer1.Panel1.Controls.Add(splitContainer2);
+            // 
+            // splitContainer1.Panel2
+            // 
+            splitContainer1.Panel2.Controls.Add(listViewAppHeader);
+            splitContainer1.Size = new Size(804, 201);
+            splitContainer1.SplitterDistance = 536;
+            splitContainer1.TabIndex = 6;
+            // 
+            // splitContainer2
+            // 
+            splitContainer2.Dock = DockStyle.Fill;
+            splitContainer2.Location = new Point(0, 0);
+            splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            splitContainer2.Panel1.Controls.Add(listViewHexFiles);
+            // 
+            // splitContainer2.Panel2
+            // 
+            splitContainer2.Panel2.Controls.Add(listViewPartitionTable);
+            splitContainer2.Size = new Size(536, 201);
+            splitContainer2.SplitterDistance = 268;
+            splitContainer2.TabIndex = 0;
+            // 
+            // listViewHexFiles
+            // 
+            listViewHexFiles.Dock = DockStyle.Fill;
+            listViewHexFiles.Location = new Point(0, 0);
+            listViewHexFiles.Name = "listViewHexFiles";
+            listViewHexFiles.Size = new Size(268, 201);
+            listViewHexFiles.TabIndex = 4;
+            listViewHexFiles.UseCompatibleStateImageBehavior = false;
+            listViewHexFiles.View = View.Details;
+            // 
             // listViewPartitionTable
             // 
-            listViewPartitionTable.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            listViewPartitionTable.Location = new Point(6, 125);
+            listViewPartitionTable.Dock = DockStyle.Fill;
+            listViewPartitionTable.Location = new Point(0, 0);
             listViewPartitionTable.Name = "listViewPartitionTable";
-            listViewPartitionTable.Size = new Size(804, 97);
+            listViewPartitionTable.Size = new Size(264, 201);
             listViewPartitionTable.TabIndex = 5;
             listViewPartitionTable.UseCompatibleStateImageBehavior = false;
             listViewPartitionTable.View = View.Details;
             // 
-            // listViewHexFiles
+            // listViewAppHeader
             // 
-            listViewHexFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            listViewHexFiles.Location = new Point(6, 22);
-            listViewHexFiles.Name = "listViewHexFiles";
-            listViewHexFiles.Size = new Size(804, 97);
-            listViewHexFiles.TabIndex = 4;
-            listViewHexFiles.UseCompatibleStateImageBehavior = false;
-            listViewHexFiles.View = View.Details;
+            listViewAppHeader.Dock = DockStyle.Fill;
+            listViewAppHeader.Location = new Point(0, 0);
+            listViewAppHeader.Name = "listViewAppHeader";
+            listViewAppHeader.Size = new Size(264, 201);
+            listViewAppHeader.TabIndex = 5;
+            listViewAppHeader.UseCompatibleStateImageBehavior = false;
+            listViewAppHeader.View = View.Details;
             // 
             // groupBoxActions
             // 
@@ -98,25 +151,6 @@
             groupBoxActions.TabIndex = 2;
             groupBoxActions.TabStop = false;
             groupBoxActions.Text = "Actions";
-            // 
-            // buttonCancel
-            // 
-            buttonCancel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonCancel.Location = new Point(735, 22);
-            buttonCancel.Name = "buttonCancel";
-            buttonCancel.Size = new Size(75, 23);
-            buttonCancel.TabIndex = 13;
-            buttonCancel.Text = "Cancel";
-            buttonCancel.UseVisualStyleBackColor = true;
-            buttonCancel.Click += buttonCancel_Click;
-            // 
-            // progressBar1
-            // 
-            progressBar1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            progressBar1.Location = new Point(6, 22);
-            progressBar1.Name = "progressBar1";
-            progressBar1.Size = new Size(723, 23);
-            progressBar1.TabIndex = 12;
             // 
             // checkBoxCompression
             // 
@@ -149,6 +183,25 @@
             buttonProgram.Text = "Program";
             buttonProgram.UseVisualStyleBackColor = true;
             buttonProgram.Click += buttonProgram_Click;
+            // 
+            // buttonCancel
+            // 
+            buttonCancel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonCancel.Location = new Point(735, 22);
+            buttonCancel.Name = "buttonCancel";
+            buttonCancel.Size = new Size(75, 23);
+            buttonCancel.TabIndex = 13;
+            buttonCancel.Text = "Cancel";
+            buttonCancel.UseVisualStyleBackColor = true;
+            buttonCancel.Click += buttonCancel_Click;
+            // 
+            // progressBar1
+            // 
+            progressBar1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            progressBar1.Location = new Point(6, 22);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(723, 23);
+            progressBar1.TabIndex = 12;
             // 
             // groupBoxLog
             // 
@@ -268,6 +321,14 @@
             Text = "Form1";
             Load += Form1_Load;
             groupBoxArchive.ResumeLayout(false);
+            splitContainer1.Panel1.ResumeLayout(false);
+            splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
+            splitContainer2.Panel1.ResumeLayout(false);
+            splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
+            splitContainer2.ResumeLayout(false);
             groupBoxActions.ResumeLayout(false);
             groupBoxActions.PerformLayout();
             groupBoxLog.ResumeLayout(false);
@@ -299,5 +360,8 @@
         private ToolStrip toolStrip1;
         private Button buttonCancel;
         private GroupBox groupBoxProgress;
+        private SplitContainer splitContainer1;
+        private SplitContainer splitContainer2;
+        private ListView listViewAppHeader;
     }
 }

@@ -1,15 +1,17 @@
 ﻿using ESP_Flasher.Models;
+using ESP_Flasher.Services;
 
 namespace ESP_Flasher.UIBinders
 {
     public class PartitionTableListViewBinder
     {
         private readonly ListView _listView;
-
-        public PartitionTableListViewBinder(ListView listView)
+        private readonly ArchiveService _archiveService;
+        public PartitionTableListViewBinder(ListView listView, ArchiveService archiveService)
         {
             _listView = listView;
             SetupColumns();
+            _archiveService = archiveService;
         }
 
         private void SetupColumns()
@@ -22,11 +24,14 @@ namespace ESP_Flasher.UIBinders
             _listView.Columns.Add("Size", 100);
         }
 
-        public void Populate(FirmwareArchive archive)
+        public async Task Populate(FirmwareArchive archive)
         {
             _listView.Items.Clear();
 
-            foreach (var partition in archive.PartitionTable.Partitions)
+            PartitionTable table = await _archiveService.ExtractPartitionTable(archive) ?? new PartitionTable();
+
+
+            foreach (var partition in table.Partitions)
             {
                 // Create a ListViewItem for each entry
                 ListViewItem item = new ListViewItem(partition.Name);

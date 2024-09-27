@@ -29,6 +29,7 @@ namespace ESP_Flasher
         private readonly PartitionTableListViewBinder _partitionBinder;
         private readonly RichTextBoxLoggerFactory _richTextBoxLoggerFactory;
         private readonly ProgressBarBinder _progressBarBinder;
+        private readonly AppHeaderListViewBinder _appHeaderListViewBinder;
 
         // Variables
         FirmwareArchive openArchive;
@@ -49,8 +50,9 @@ namespace ESP_Flasher
             // Bind the UI elements to data
             _serialPortBinder = new SerialPortBinder(comboBoxSerialPort, comboBoxBaudRate);
             _archiveBinder = new ArchiveListViewBinder(listViewHexFiles);
-            _partitionBinder = new PartitionTableListViewBinder(listViewPartitionTable);
+            _partitionBinder = new PartitionTableListViewBinder(listViewPartitionTable, _archiveService);
             _progressBarBinder = new ProgressBarBinder(progressBar1);
+            _appHeaderListViewBinder = new AppHeaderListViewBinder(listViewAppHeader, _archiveService);
 
             // Set variables;
             logger = _richTextBoxLoggerFactory.CreateLogger<Form1>();
@@ -73,11 +75,12 @@ namespace ESP_Flasher
             //toolStrip1.AddMenuItem("File/Save as/Release", SaveArchiveHex);
         }
 
-        private void NewArchive()
+        private async void NewArchive()
         {
             openArchive = new FirmwareArchive();
             _archiveBinder.Populate(openArchive);
-            _partitionBinder.Populate(openArchive);
+            await _partitionBinder.Populate(openArchive);
+            await _appHeaderListViewBinder.Populate(openArchive);
         }
 
         private async void OpenArchiveDialog()
@@ -90,7 +93,8 @@ namespace ESP_Flasher
             
             openArchive = await _archiveService.LoadFromZip(dialog.FileName) ?? openArchive;
             _archiveBinder.Populate(openArchive);
-            _partitionBinder.Populate(openArchive);
+            await _partitionBinder.Populate(openArchive);
+            await _appHeaderListViewBinder.Populate(openArchive);
         }
 
         private async void CreateArchiveFromBuild()
@@ -102,7 +106,8 @@ namespace ESP_Flasher
 
             openArchive = await _archiveService.LoadFromBuildDirectory(dialog.FileName) ?? openArchive;
             _archiveBinder.Populate(openArchive);
-            _partitionBinder.Populate(openArchive);
+            await _partitionBinder.Populate(openArchive);
+            await _appHeaderListViewBinder.Populate(openArchive);
         }
 
         private async void SaveArchive()
@@ -124,8 +129,7 @@ namespace ESP_Flasher
             if (dialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            using Stream stream = dialog.OpenFile();
-            await _archiveService.SaveArchiveHex(stream, openArchive);
+            await _archiveService.SaveArchive(openArchive, dialog.FileName);
         }
 
         private void buttonRefresh_Click(object sender, EventArgs e)
