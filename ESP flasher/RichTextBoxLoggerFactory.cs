@@ -25,6 +25,11 @@ namespace ESP_Flasher.Logging
             // Optional: For extending with external providers
         }
 
+        public void Clear()
+        {
+            _richTextBox.Clear();
+        }
+
         public void Dispose()
         {
             _loggers.Clear();

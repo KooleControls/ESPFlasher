@@ -5,7 +5,9 @@ using ESP_Flasher.UIBinders;
 using FRMLib;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
 using System.IO.Ports;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 
@@ -54,6 +56,8 @@ namespace ESP_Flasher
             // Set variables;
             logger = _richTextBoxLoggerFactory.CreateLogger<Form1>();
             openArchive = new FirmwareArchive();
+
+            UpdateTitle();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -133,6 +137,7 @@ namespace ESP_Flasher
             try
             {
                 UiEnabled(false);
+                _richTextBoxLoggerFactory.Clear();
                 cancelButtonSource = new CancellationTokenSource();
                 await _flashingService.EraseFlashAsync(cancelButtonSource.Token);
             }
@@ -157,6 +162,7 @@ namespace ESP_Flasher
             try
             {
                 UiEnabled(false);
+                _richTextBoxLoggerFactory.Clear();
                 cancelButtonSource = new CancellationTokenSource();
                 _flashingService.UseCompression = checkBoxCompression.Checked;
                 _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
@@ -187,6 +193,22 @@ namespace ESP_Flasher
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             cancelButtonSource?.Cancel();
+        }
+
+
+
+
+        private void UpdateTitle()
+        {
+            // Get the version of the application
+            Version? version = Assembly.GetExecutingAssembly().GetName().Version;
+
+#if DEBUG
+            this.Text = $"Log viewer '{version}' (DEBUG)";
+#elif RELEASE
+            this.Text = $"Log viewer '{version}'";
+#endif
+
         }
     }
 
