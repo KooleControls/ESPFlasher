@@ -11,12 +11,14 @@ namespace ESP_Flasher.Services
         private readonly ILogger<ArchiveService> _logger;
         private readonly FirmwareArchiveLoader _zipLoader;
         private readonly BuildFolderArchiveLoader _buildLoader;
+        private readonly FirmwareArchiveSaver _zipSaver;
 
         public ArchiveService(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<ArchiveService>();
             _zipLoader = new FirmwareArchiveLoader(loggerFactory);
             _buildLoader = new BuildFolderArchiveLoader(loggerFactory);
+            _zipSaver = new FirmwareArchiveSaver(loggerFactory);
         }
 
         // Load archive from ZIP
@@ -33,9 +35,9 @@ namespace ESP_Flasher.Services
 
 
 
-        public async Task SaveArchive(Stream stream, FirmwareArchive archive)
+        public async Task SaveArchive(FirmwareArchive archive, string zipFile, CancellationToken token = default)
         {
-        
+            await _zipSaver.SaveToZip(zipFile, archive, token);
         }
         
         public async Task SaveArchiveHex(Stream stream, FirmwareArchive archive)

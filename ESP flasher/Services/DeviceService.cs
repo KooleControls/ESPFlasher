@@ -70,10 +70,10 @@ namespace ESP_Flasher.Services
             }
 
             // Calculate total size
-            long totalSize = archive.Entries.Sum(entry => entry.Contents.Length);
+            long totalSize = archive.BinFiles.Sum(entry => entry.Contents.Length);
             long bytesUploaded = 0;
 
-            foreach (var entry in archive.Entries)
+            foreach (var entry in archive.BinFiles)
             {
                 using MemoryStream stream = new MemoryStream(entry.Contents);
                 UInt32 size = (UInt32)entry.Contents.Length;

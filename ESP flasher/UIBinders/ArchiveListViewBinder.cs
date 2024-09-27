@@ -24,7 +24,7 @@ namespace ESP_Flasher.UIBinders
         {
             _listView.Items.Clear();
 
-            foreach (var entry in archive.Entries)
+            foreach (var entry in archive.BinFiles)
             {
                 // Create a ListViewItem for each entry
                 ListViewItem item = new ListViewItem(entry.File);

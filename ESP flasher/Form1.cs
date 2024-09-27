@@ -63,11 +63,14 @@ namespace ESP_Flasher
         {
             toolStrip1.AddMenuItem("File/New", NewArchive);
             toolStrip1.AddMenuItem("File/Open Archive", OpenArchiveDialog);
-            //toolStrip1.AddMenuItem("File/Open Build folder", CreateArchiveFromBuild);
-            //toolStrip1.AddMenuItem("File/Save as/Archive", SaveArchive);
-            //toolStrip1.AddMenuItem("File/Save as/Hex", SaveArchiveHex);
             toolStrip1.AddMenuItem("File/Exit", Close);
 
+
+            // These are features used by development
+            toolStrip1.AddMenuItem("File/Open Build folder", CreateArchiveFromBuild);
+            toolStrip1.AddMenuItem("File/Save as/Archive", SaveArchive);
+            //toolStrip1.AddMenuItem("File/Save as/Hex", SaveArchiveHex);
+            //toolStrip1.AddMenuItem("File/Save as/Release", SaveArchiveHex);
         }
 
         private void NewArchive()
@@ -110,8 +113,7 @@ namespace ESP_Flasher
             if (dialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            using Stream stream = dialog.OpenFile();
-            await _archiveService.SaveArchive(stream, openArchive);
+            await _archiveService.SaveArchive(openArchive, dialog.FileName);
         }
 
         private async void SaveArchiveHex()

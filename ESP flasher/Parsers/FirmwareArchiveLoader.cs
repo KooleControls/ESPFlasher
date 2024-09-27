@@ -28,7 +28,7 @@ namespace ESP_Flasher.Parsers
 
                 FirmwareArchive firmwareArchive = new FirmwareArchive
                 {
-                    Entries = await LoadEntriesUsingSettingsJson(archiveZip, token),
+                    BinFiles = await LoadEntriesUsingSettingsJson(archiveZip, token),
                     PartitionTable = await LoadPartitionTable(archiveZip, token) ?? new PartitionTable()
                 };
 
