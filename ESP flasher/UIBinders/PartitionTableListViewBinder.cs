@@ -22,11 +22,11 @@ namespace ESP_Flasher.UIBinders
             _listView.Columns.Add("Size", 100);
         }
 
-        public void Populate(PartitionTable partitionTable)
+        public void Populate(FirmwareArchive archive)
         {
             _listView.Items.Clear();
 
-            foreach (var partition in partitionTable.Partitions)
+            foreach (var partition in archive.PartitionTable.Partitions)
             {
                 // Create a ListViewItem for each entry
                 ListViewItem item = new ListViewItem(partition.Name);

@@ -1,4 +1,5 @@
-﻿using System.IO.Ports;
+﻿using System.ComponentModel;
+using System.IO.Ports;
 
 namespace ESP_Flasher.UIBinders
 {

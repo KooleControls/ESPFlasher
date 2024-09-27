@@ -1,4 +1,5 @@
 ﻿using ESP_Flasher.Models;
+using Microsoft.Extensions.Logging;
 using System.IO.Compression;
 using System.Text.Json;
 
@@ -10,70 +11,81 @@ namespace ESP_Flasher.Parsers
         public string SettingsFileName { get; set; } = "Settings.json";
         public string PartitionTableFileName { get; set; } = "partition-table.bin";
 
-        // Parse the firmware archive from a stream
-        public FirmwareArchive? Parse(Stream stream)
-        {
-            var firmwareArchive = new FirmwareArchive();
+        private readonly ILogger<FirmwareArchiveLoader> _logger;
 
+        public FirmwareArchiveLoader(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger<FirmwareArchiveLoader>();
+        }
+
+        // Load the archive from a zip file stream
+        public async Task<FirmwareArchive?> LoadFromZip(string zipFile, CancellationToken token = default)
+        {
             try
             {
-                using ZipArchive archiveZip = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+                using Stream stream = File.OpenRead(zipFile);
+                using ZipArchive archiveZip = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
 
-                // Attempt to load various components of the firmware archive
-                firmwareArchive.Entries = LoadSettingsFile(archiveZip);
-                firmwareArchive.PartitionTable = LoadPartitionTable(archiveZip);
+                FirmwareArchive firmwareArchive = new FirmwareArchive
+                {
+                    Entries = await LoadEntriesUsingSettingsJson(archiveZip, token),
+                    PartitionTable = await LoadPartitionTable(archiveZip, token) ?? new PartitionTable()
+                };
+
+                return firmwareArchive;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading firmware archive: {ex.Message}");
+                _logger.LogError(ex, "Error loading firmware archive from ZIP.");
                 return null;
             }
-
-            return firmwareArchive;
         }
 
-        // Private method to load settings.json
-        private List<BinFile> LoadSettingsFile(ZipArchive archiveZip)
+        // Private method to load entries from settings.json
+        private async Task<List<BinFile>> LoadEntriesUsingSettingsJson(ZipArchive archiveZip, CancellationToken token = default)
         {
+            List<BinFile> binFiles = new List<BinFile>();
             try
             {
                 ZipArchiveEntry? settingsEntry = archiveZip.GetEntry(SettingsFileName);
                 if (settingsEntry == null)
                 {
-                    MessageBox.Show($"{SettingsFileName} not found in the archive.");
-                    return null;
+                    _logger.LogError("Settings file {SettingsFileName} not found in the archive.", SettingsFileName);
+                    return binFiles;
                 }
 
                 using StreamReader reader = new StreamReader(settingsEntry.Open());
-                string jsonContent = reader.ReadToEnd();
+                string jsonContent = await reader.ReadToEndAsync();
 
-                var binFiles = JsonSerializer.Deserialize<List<BinFile>>(jsonContent) ?? new List<BinFile>();
-
-                foreach(var binFile in binFiles)
+                binFiles = JsonSerializer.Deserialize<List<BinFile>>(jsonContent) ?? new List<BinFile>();
+                foreach (var binFile in binFiles)
                 {
-                    ZipArchiveEntry? entry = archiveZip.GetEntry(binFile.File) ?? throw new Exception("File not found");
-                    binFile.Size = entry.Length;
+                    ZipArchiveEntry? entry = archiveZip.GetEntry(binFile.File) ?? throw new Exception($"File {binFile.File} not found in the archive.");
+                    binFile.Contents = new byte[entry.Length];
+                    using MemoryStream copyStream = new MemoryStream(binFile.Contents);
+                    using Stream entryStream = entry.Open();
+                    await entryStream.CopyToAsync(copyStream, token);
+                    copyStream.Position = 0;
                 }
 
-                return binFiles;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading {SettingsFileName}: {ex.Message}");
+                _logger.LogError(ex, "Error loading entries from {SettingsFileName}.", SettingsFileName);
             }
 
-            return new List<BinFile>();
+            return binFiles;
         }
 
         // Private method to load partition-table.bin
-        private PartitionTable? LoadPartitionTable(ZipArchive archiveZip)
+        private async Task<PartitionTable?> LoadPartitionTable(ZipArchive archiveZip, CancellationToken token = default)
         {
             try
             {
                 ZipArchiveEntry? partitionTableEntry = archiveZip.GetEntry(PartitionTableFileName);
                 if (partitionTableEntry == null)
                 {
-                    // No partition table found, this may be acceptable in some cases
+                    _logger.LogWarning("Partition table file {PartitionTableFileName} not found in the archive.", PartitionTableFileName);
                     return null;
                 }
 
@@ -83,12 +95,9 @@ namespace ESP_Flasher.Parsers
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading {PartitionTableFileName}: {ex.Message}");
+                _logger.LogError(ex, "Error loading partition table {PartitionTableFileName}.", PartitionTableFileName);
                 return null;
             }
         }
     }
-
-
 }
-
