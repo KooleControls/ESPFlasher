@@ -2,7 +2,6 @@ using ESP_Flasher.Logging;
 using ESP_Flasher.Models;
 using ESP_Flasher.Services;
 using ESP_Flasher.UIBinders;
-using FRMLib;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
