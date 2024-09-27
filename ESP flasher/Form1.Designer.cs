@@ -78,6 +78,7 @@
             // 
             // splitContainer1
             // 
+            splitContainer1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             splitContainer1.Location = new Point(6, 22);
             splitContainer1.Name = "splitContainer1";
             // 

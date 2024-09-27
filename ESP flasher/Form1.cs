@@ -16,7 +16,8 @@ namespace ESP_Flasher
     {
         // Constants
         private readonly string archiveFileFilter = "Firmware archive|*.kczip";
-        private readonly string hexFileFilter = "Binary file|*.bin";
+        private readonly string hexFileFilter = "Intel hex file|*.hex";
+        private readonly string binFileFilter = "Binary file|*.bin";
         private readonly string buildArgsFileFilter = "flash_project_args|flash_project_args";
 
         // Services
@@ -63,16 +64,15 @@ namespace ESP_Flasher
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            // File Operations
             toolStrip1.AddMenuItem("File/New", NewArchive);
             toolStrip1.AddMenuItem("File/Open Archive", OpenArchiveDialog);
+            toolStrip1.AddMenuItem("File/Save as/Archive", SaveArchive);
+            toolStrip1.AddMenuItem("File/Save as/Intel hex", SaveIntelHex);
             toolStrip1.AddMenuItem("File/Exit", Close);
 
-
-            // These are features used by development
-            toolStrip1.AddMenuItem("File/Open Build folder", CreateArchiveFromBuild);
-            toolStrip1.AddMenuItem("File/Save as/Archive", SaveArchive);
-            //toolStrip1.AddMenuItem("File/Save as/Hex", SaveArchiveHex);
-            //toolStrip1.AddMenuItem("File/Save as/Release", SaveArchiveHex);
+            // Development Tools
+            toolStrip1.AddMenuItem("Development/Open Build folder", LoadBuildDirectory);
         }
 
         private async void NewArchive()
@@ -97,7 +97,7 @@ namespace ESP_Flasher
             await _appHeaderListViewBinder.Populate(openArchive);
         }
 
-        private async void CreateArchiveFromBuild()
+        private async void LoadBuildDirectory()
         {
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Filter = buildArgsFileFilter;
@@ -121,7 +121,7 @@ namespace ESP_Flasher
             await _archiveService.SaveArchive(openArchive, dialog.FileName);
         }
 
-        private async void SaveArchiveHex()
+        private async void SaveIntelHex()
         {
             using SaveFileDialog dialog = new SaveFileDialog();
             dialog.Filter = hexFileFilter;
@@ -129,7 +129,7 @@ namespace ESP_Flasher
             if (dialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            await _archiveService.SaveArchive(openArchive, dialog.FileName);
+            await _archiveService.SaveArchiveIntelHex(openArchive, dialog.FileName);
         }
 
         private void buttonRefresh_Click(object sender, EventArgs e)
@@ -209,9 +209,9 @@ namespace ESP_Flasher
             Version? version = Assembly.GetExecutingAssembly().GetName().Version;
 
 #if DEBUG
-            this.Text = $"Log viewer '{version}' (DEBUG)";
+            this.Text = $"ESP Flasher '{version}' (DEBUG)";
 #elif RELEASE
-            this.Text = $"Log viewer '{version}'";
+            this.Text = $"ESP Flasher '{version}'";
 #endif
 
         }

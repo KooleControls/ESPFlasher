@@ -12,6 +12,7 @@ namespace ESP_Flasher.Services
         private readonly ZipArchiveLoader _zipLoader;
         private readonly ZipArchiveSaver _zipSaver;
         private readonly BuildFolderLoader _buildLoader;
+        private readonly IntelHexSaver _intelHexSaver;
         private readonly PartitionTableExtractor _partitionTableExtractor;
         private readonly AppHeaderExtractor _appHeaderExtractor;
 
@@ -22,7 +23,8 @@ namespace ESP_Flasher.Services
             _zipSaver = new ZipArchiveSaver(loggerFactory);
             _buildLoader = new BuildFolderLoader(loggerFactory);
             _partitionTableExtractor = new PartitionTableExtractor(loggerFactory);
-            _appHeaderExtractor = new AppHeaderExtractor(loggerFactory); 
+            _appHeaderExtractor = new AppHeaderExtractor(loggerFactory);
+            _intelHexSaver = new IntelHexSaver(loggerFactory, _appHeaderExtractor);
         }
 
         public async Task<FirmwareArchive?> LoadFromZip(string zipFile, CancellationToken token = default)
@@ -38,6 +40,11 @@ namespace ESP_Flasher.Services
         public async Task SaveArchive(FirmwareArchive archive, string zipFile, CancellationToken token = default)
         {
             await _zipSaver.SaveArchiveAsync(zipFile, archive, token);
+        }
+
+        public async Task SaveArchiveIntelHex(FirmwareArchive archive, string zipFile, CancellationToken token = default)
+        {
+            await _intelHexSaver.SaveArchiveAsync(zipFile, archive, token);
         }
 
         public async Task<PartitionTable?> ExtractPartitionTable(FirmwareArchive archive, CancellationToken token = default)

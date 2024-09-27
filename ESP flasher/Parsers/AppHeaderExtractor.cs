@@ -48,7 +48,7 @@ namespace ESP_Flasher.Services
         /// <param name="stream">The memory stream containing the binary data.</param>
         /// <param name="token">Cancellation token for async operations.</param>
         /// <returns>An AppHeader object if valid, otherwise null.</returns>
-        private async Task<AppHeader?> ParseAppHeaderAsync(MemoryStream stream, CancellationToken token)
+        public async Task<AppHeader?> ParseAppHeaderAsync(MemoryStream stream, CancellationToken token = default)
         {
             try
             {
