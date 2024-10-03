@@ -3,7 +3,7 @@ name: Build and Release Application Files
 on:
   push:
     tags:
-      - 'V*'  # Trigger on version tags like v1.0.0
+      - 'v*'  # Trigger on version tags like v1.0.0
 
 jobs:
   build:
@@ -20,21 +20,21 @@ jobs:
 
     - name: Extract version from tag
       id: extract_version
-      run: echo "VERSION=${GITHUB_REF/refs\/tags\/V/}" >> $GITHUB_ENV
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
 
     - name: Update version in .csproj
       run: |
-        sed -i 's/<Version>.*<\/Version>/<Version>${{ env.VERSION }}<\/Version>/' path/to/your.csproj
-        cat "ESP Flasher\ESP flasher.csproj"
+        sed -i 's/<Version>.*<\/Version>/<Version>${{ env.VERSION }}<\/Version>/' "ESP Flasher/ESP flasher.csproj"
+        cat "ESP Flasher/ESP flasher.csproj"
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore "ESP Flasher/ESP flasher.csproj"
 
     - name: Build solution
-      run: dotnet build --configuration Release
+      run: dotnet build "ESP Flasher/ESP flasher.csproj" --configuration Release
 
     - name: Publish the application
-      run: dotnet publish -c Release -o ./publish
+      run: dotnet publish "ESP Flasher/ESP flasher.csproj" -c Release -o ./publish
 
     - name: Create zip archive
       run: |
