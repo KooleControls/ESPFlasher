@@ -18,15 +18,12 @@ jobs:
       with:
         dotnet-version: '8.x'
 
-    - name: Extract version from tag
-      id: extract_version
-      run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
-
-    - name: Update version in .csproj
-      run: |
-        VERSION="${{ env.VERSION }}"
-        sed -i "s#<Version>.*</Version>#<Version>${VERSION}</Version>#" "ESP Flasher/ESP flasher.csproj"
-        cat "ESP Flasher/ESP flasher.csproj"
+    - name: Set version in .csproj
+      id: package_version
+      uses: KageKirin/set-csproj-version@v0
+      with:
+        file: "ESP Flasher/ESP flasher.csproj"  # Path to your .csproj file
+        version: ${{ github.ref_name }}  # Use the tag as the version
 
     - name: Restore dependencies
       run: dotnet restore "ESP Flasher/ESP flasher.csproj"
