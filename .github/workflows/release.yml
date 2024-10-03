@@ -16,6 +16,11 @@ jobs:
         submodules: true
         fetch-depth: 0
 
+    - name: Install Visual Studio Build Tools
+      uses: microsoft/setup-msbuild@v1
+      with:
+        vs-version: latest
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
@@ -35,7 +40,10 @@ jobs:
         powershell Compress-Archive -Path ./publish/portable/* -DestinationPath ./ESPFlasher_Portable.zip
 
     - name: Publish the application (ClickOnce)
-      run: dotnet publish "ESP Flasher/ESP flasher.csproj" -c Release /p:PublishProfile=ClickOnceProfile
+      run: |
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" \
+        "ESP Flasher/ESP flasher.csproj" \
+        /p:PublishProfile=ClickOnceProfile /p:Configuration=Release
 
     - name: Create zip archive (ClickOnce)
       run: |
