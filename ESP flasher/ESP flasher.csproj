@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>ESP_Flasher</RootNamespace>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+	<Version>6.2.0.0</Version>
+  </PropertyGroup>
+
+  <Target Name="SetAssemblyVersion" BeforeTargets="BeforeCompile">
+  	<FormatVersion Version="$(Version)" Revision="$(ApplicationRevision)">
+  		<Output PropertyName="ApplicationVersion" TaskParameter="OutputVersion" />
+  	</FormatVersion>
+  	<FormatVersion Version="$(Version)" Revision="$(ApplicationRevision)">
+  		<Output PropertyName="AssemblyVersion" TaskParameter="OutputVersion" />
+  	</FormatVersion>
+  	<FormatVersion Version="$(Version)" Revision="$(ApplicationRevision)">
+  		<Output PropertyName="FileVersion" TaskParameter="OutputVersion" />
+  	</FormatVersion>
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ESPTool\ESPTool\ESPTool.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+
+</Project>
