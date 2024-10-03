@@ -29,8 +29,8 @@ jobs:
     - name: Extract version from tag (without 'v' prefix)
       id: extract_version
       run: |
-        VERSION=${GITHUB_REF/refs\/tags\/v/}
-        echo "Extracted version: $VERSION"
+        VERSION=${GITHUB_REF_NAME#v}
+        echo Version: $VERSION
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Update version in .csproj
