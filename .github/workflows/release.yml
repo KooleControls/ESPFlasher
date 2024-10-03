@@ -39,15 +39,16 @@ jobs:
       run: |
         powershell Compress-Archive -Path ./publish/portable/* -DestinationPath ./ESPFlasher_Portable.zip
 
-    - name: Publish the application (ClickOnce)
-      run: |
-        "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" \
-        "ESP Flasher/ESP flasher.csproj" \
-        /p:PublishProfile=ClickOnceProfile /p:Configuration=Release
-
-    - name: Create zip archive (ClickOnce)
-      run: |
-        powershell Compress-Archive -Path "ESP Flasher/bin/Release/net8.0-windows/publish/*" -DestinationPath ./ESPFlasher_ClickOnce.zip
+#    - name: Publish the application (ClickOnce)
+#      shell: pwsh
+#      run: |
+#        & "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" `
+#        "ESP Flasher/ESP flasher.csproj" `
+#        /p:PublishProfile=ClickOnceProfile /p:Configuration=Release
+#
+#    - name: Create zip archive (ClickOnce)
+#      run: |
+#        powershell Compress-Archive -Path "ESP Flasher/bin/Release/net8.0-windows/publish/*" -DestinationPath ./ESPFlasher_ClickOnce.zip
 
     - name: Create Release
       id: create_release
@@ -73,14 +74,14 @@ jobs:
         asset_content_type: application/zip
         label: "ESP Flasher Portable Version"
 
-    - name: Upload ClickOnce Installer
-      id: upload-release-asset-clickonce
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./ESPFlasher_ClickOnce.zip
-        asset_name: ESPFlasher_ClickOnce.zip
-        asset_content_type: application/zip
-        label: "ESP Flasher ClickOnce Installer"
+#    - name: Upload ClickOnce Installer
+#      id: upload-release-asset-clickonce
+#      uses: actions/upload-release-asset@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        upload_url: ${{ steps.create_release.outputs.upload_url }}
+#        asset_path: ./ESPFlasher_ClickOnce.zip
+#        asset_name: ESPFlasher_ClickOnce.zip
+#        asset_content_type: application/zip
+#        label: "ESP Flasher ClickOnce Installer"
