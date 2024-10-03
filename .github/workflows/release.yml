@@ -31,11 +31,11 @@ jobs:
       run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
 
     - name: Update version in .csproj
-        id: package_version
-        uses: KageKirin/set-csproj-version@v1.0.0
-        with:
-          file: "ESP Flasher/ESP flasher.csproj"
-          version: ${{ github.ref_name }}
+      id: package_version
+      uses: KageKirin/set-csproj-version@v1.0.0
+      with:
+        file: "ESP Flasher/ESP flasher.csproj"
+        version: ${{ github.ref_name }}
 
     - name: Restore dependencies
       run: dotnet restore "ESP Flasher/ESP flasher.csproj"
