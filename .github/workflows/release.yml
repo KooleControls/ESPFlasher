@@ -17,16 +17,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '8.x'
-        
-    - name: Extract version without 'v' prefix
-      id: get_version
-      run: echo "VERSION=${{ github.ref_name#'v' }}" >> $GITHUB_ENV
-
-    - name: Set version in .csproj
-      uses: vers-one/dotnet-project-version-updater@v1.6
-      with:
-        file: "ESP Flasher/ESP flasher.csproj"  # Path to your .csproj file
-        version: ${{ env.VERSION }}  # Use the version without 'v'
 
     - name: Restore dependencies
       run: dotnet restore "ESP Flasher/ESP flasher.csproj"
