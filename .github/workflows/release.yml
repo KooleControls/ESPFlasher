@@ -10,8 +10,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout code with submodules
       uses: actions/checkout@v3
+      with:
+        submodules: true  # Ensure submodules are checked out
+        fetch-depth: 0  # Fetch full history to ensure tags are available
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
