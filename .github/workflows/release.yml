@@ -30,9 +30,6 @@ jobs:
       id: get_version
       uses: battila7/get-version-action@v2.2.1
 
-    - name: Show Extracted Version
-      run: echo "Version without 'v' prefix: ${{ steps.get_version.outputs.version-without-v }}"
-
     - name: Set project version
       id: set_version
       uses: vers-one/dotnet-project-version-updater@v1.6
