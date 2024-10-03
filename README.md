@@ -2,6 +2,8 @@
 
 The ESP Flasher Tool simplifies the process of flashing ESP32 devices during production. It provides a user-friendly GUI, eliminating the need for command-line tools. Production employees can manage firmware programming and flash memory operations without using esptool or Python, as everything is natively built in .NET.
 
+This tool uses the library available here: [ESPTool Library](https://github.com/KooleControls/ESPTool).
+
 ## Interface Overview
 
 ![image](https://github.com/user-attachments/assets/1ace11d7-0d76-4925-a808-0596ef45e2ca)
