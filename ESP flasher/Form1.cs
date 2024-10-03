@@ -65,14 +65,15 @@ namespace ESP_Flasher
         private void Form1_Load(object sender, EventArgs e)
         {
             // File Operations
-            toolStrip1.AddMenuItem("File/New", NewArchive);
-            toolStrip1.AddMenuItem("File/Open Archive", OpenArchiveDialog);
-            toolStrip1.AddMenuItem("File/Save as/Archive", SaveArchive);
-            toolStrip1.AddMenuItem("File/Save as/Intel hex", SaveIntelHex);
-            toolStrip1.AddMenuItem("File/Exit", Close);
+            toolStrip1.AddMenuItem("File/New").WithAction(NewArchive);
+            toolStrip1.AddMenuItem("File/Open Archive").WithAction(OpenArchiveDialog);
+            toolStrip1.AddMenuItem("File/Save as/Archive").WithAction(SaveArchive).WithToolTip("Creates KCZIP file");
+            toolStrip1.AddMenuItem("File/Save as/Application intel hex").WithAction(SaveApplicationIntelHex).WithToolTip("Creates HEX file to be used in KC220 tool and LM");
+            toolStrip1.AddMenuItem("File/Save as/Archive intel hex").WithAction(SaveArchiveIntelHex).WithToolTip("Creates HEX file including all parititions");
+            toolStrip1.AddMenuItem("File/Exit").WithAction(Close);
 
             // Development Tools
-            toolStrip1.AddMenuItem("Development/Open Build folder", LoadBuildDirectory);
+            toolStrip1.AddMenuItem("Development/Open Build folder").WithAction(LoadBuildDirectory);
         }
 
         private async void NewArchive()
@@ -121,7 +122,18 @@ namespace ESP_Flasher
             await _archiveService.SaveArchive(openArchive, dialog.FileName);
         }
 
-        private async void SaveIntelHex()
+        private async void SaveApplicationIntelHex()
+        {
+            using SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = hexFileFilter;
+
+            if (dialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            await _archiveService.SaveApplicationIntelHex(openArchive, dialog.FileName);
+        }
+
+        private async void SaveArchiveIntelHex()
         {
             using SaveFileDialog dialog = new SaveFileDialog();
             dialog.Filter = hexFileFilter;

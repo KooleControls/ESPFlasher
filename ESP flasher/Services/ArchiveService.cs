@@ -42,6 +42,11 @@ namespace ESP_Flasher.Services
             await _zipSaver.SaveArchiveAsync(zipFile, archive, token);
         }
 
+        public async Task SaveApplicationIntelHex(FirmwareArchive archive, string zipFile, CancellationToken token = default)
+        {
+            await _intelHexSaver.SaveApplicationAsync(zipFile, archive, token);
+        }
+
         public async Task SaveArchiveIntelHex(FirmwareArchive archive, string zipFile, CancellationToken token = default)
         {
             await _intelHexSaver.SaveArchiveAsync(zipFile, archive, token);

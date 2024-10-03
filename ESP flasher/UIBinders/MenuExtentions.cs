@@ -1,11 +1,10 @@
 ﻿namespace ESP_Flasher.UIBinders
 {
-    public static class MenuExtentions
+    public static class MenuExtensions
     {
-        public static void AddMenuItem(this ToolStrip menu, string menuPath, Action action)
+        public static ToolStripMenuItem AddMenuItem(this ToolStrip menu, string menuPath)
         {
             string[] split = menuPath.Split('/');
-
             ToolStripMenuItem item = null;
 
             if (menu.Items[split[0]] is ToolStripMenuItem tsi)
@@ -30,18 +29,14 @@
                     item.DropDownItems.Add(newItem);
                     item = newItem;
                 }
-
             }
 
-            if (action != null)
-                item.Click += (a, b) => action.Invoke();
+            return item;
         }
 
-
-        public static void AddMenuItem(this ToolStripMenuItem menuItem, string menuPath, Action action)
+        public static ToolStripMenuItem AddMenuItem(this ToolStripMenuItem menuItem, string menuPath)
         {
             string[] split = menuPath.Split('/');
-
             ToolStripMenuItem item = menuItem;
 
             for (int i = 1; i < split.Length; i++)
@@ -57,12 +52,23 @@
                     item.DropDownItems.Add(newItem);
                     item = newItem;
                 }
-
             }
 
+            return item;
+        }
+
+        public static ToolStripMenuItem WithAction(this ToolStripMenuItem menuItem, Action action)
+        {
             if (action != null)
-                item.Click += (a, b) => action.Invoke();
+                menuItem.Click += (a, b) => action.Invoke();
+
+            return menuItem;
+        }
+
+        public static ToolStripMenuItem WithToolTip(this ToolStripMenuItem menuItem, string toolTip)
+        {
+            menuItem.ToolTipText = toolTip;
+            return menuItem;
         }
     }
 }
-
