@@ -75,8 +75,9 @@ namespace ESP_Flasher.Parsers
                     }
 
                     binFile.Contents = new byte[entry.Length];
+                    using MemoryStream copyStream = new MemoryStream(binFile.Contents);
                     using Stream entryStream = entry.Open();
-                    await entryStream.ReadAsync(binFile.Contents, 0, binFile.Contents.Length, token);
+                    await entryStream.CopyToAsync(copyStream, token);
                 }
             }
             catch (Exception ex)
