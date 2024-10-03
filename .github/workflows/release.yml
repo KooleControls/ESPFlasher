@@ -25,6 +25,7 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '8.x'
+        
     - name: Extract Version
       id: get_version
       uses: battila7/get-version-action@v2.2.1
@@ -33,11 +34,11 @@ jobs:
       run: echo "Version without 'v' prefix: ${{ steps.get_version.outputs.version-without-v }}"
 
     - name: Set project version
-        id: set_version
-        uses: vers-one/dotnet-project-version-updater@v1.6
-        with:
-          file: "ESP Flasher/ESP flasher.csproj"
-          version: ${{ steps.get_version.outputs.version-without-v }}
+      id: set_version
+      uses: vers-one/dotnet-project-version-updater@v1.6
+      with:
+        file: "ESP Flasher/ESP flasher.csproj"
+        version: ${{ steps.get_version.outputs.version-without-v }}
 
     - name: Restore dependencies
       run: dotnet restore "ESP Flasher/ESP flasher.csproj"
