@@ -24,7 +24,7 @@ jobs:
 
     - name: Update version in .csproj
       run: |
-        sed -i 's/<Version>.*<\/Version>/<Version>${{ env.VERSION }}<\/Version>/' "ESP Flasher/ESP flasher.csproj"
+        sed -i 's#<Version>.*</Version>#<Version>'"${{ env.VERSION }}"'</Version>#' "ESP Flasher/ESP flasher.csproj"
         cat "ESP Flasher/ESP flasher.csproj"
 
     - name: Restore dependencies
