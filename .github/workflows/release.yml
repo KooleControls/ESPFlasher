@@ -10,11 +10,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code with submodules
+    - name: Checkout code
       uses: actions/checkout@v3
       with:
-        submodules: true  # Ensure submodules are checked out
-        fetch-depth: 0  # Fetch full history to ensure tags are available
+        submodules: true
+        fetch-depth: 0
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
@@ -34,7 +34,7 @@ jobs:
       run: |
         powershell Compress-Archive -Path ./publish/* -DestinationPath ./ESPFlasher.zip
 
-    - name: Create GitHub Release
+    - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -45,8 +45,11 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Upload ZIP to Release
+    - name: Upload Release Asset
+      id: upload-release-asset
       uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./ESPFlasher.zip
