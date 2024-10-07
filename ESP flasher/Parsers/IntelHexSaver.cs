@@ -74,7 +74,7 @@ namespace ESP_Flasher.Parsers
 
                 await using var writer = new IntelHexWriter(hexFile, recordLength: 32);
                 await using var contentStream = new MemoryStream(targetBinFile.Contents);
-                await writer.WriteHexRecordsAsync(contentStream, targetBinFile.Address, token);
+                await writer.WriteHexRecordsAsync(contentStream, 0, token);
 
                 await writer.WriteEndOfFileAsync(token);
 

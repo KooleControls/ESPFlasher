@@ -5,7 +5,7 @@
 - **No major changes in this release.**
 
 **Fixes:**
-- **Fixed loading archives.**
+- **Application address** The address of the application hex starts at 0x00
 
 **Removed:**
 - **No major removals in this release.**
