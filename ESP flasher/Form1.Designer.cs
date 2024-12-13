@@ -50,6 +50,8 @@
             groupBoxSerial = new GroupBox();
             toolStrip1 = new ToolStrip();
             groupBoxProgress = new GroupBox();
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabel_version = new ToolStripStatusLabel();
             groupBoxArchive.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -63,6 +65,7 @@
             groupBoxLog.SuspendLayout();
             groupBoxSerial.SuspendLayout();
             groupBoxProgress.SuspendLayout();
+            statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // groupBoxArchive
@@ -210,7 +213,7 @@
             groupBoxLog.Controls.Add(richTextBox1);
             groupBoxLog.Location = new Point(12, 477);
             groupBoxLog.Name = "groupBoxLog";
-            groupBoxLog.Size = new Size(816, 253);
+            groupBoxLog.Size = new Size(816, 240);
             groupBoxLog.TabIndex = 3;
             groupBoxLog.TabStop = false;
             groupBoxLog.Text = "Log";
@@ -221,7 +224,7 @@
             richTextBox1.Location = new Point(6, 22);
             richTextBox1.Name = "richTextBox1";
             richTextBox1.ReadOnly = true;
-            richTextBox1.Size = new Size(804, 225);
+            richTextBox1.Size = new Size(804, 212);
             richTextBox1.TabIndex = 0;
             richTextBox1.Text = "";
             // 
@@ -307,11 +310,27 @@
             groupBoxProgress.TabStop = false;
             groupBoxProgress.Text = "Progress";
             // 
+            // statusStrip1
+            // 
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel_version });
+            statusStrip1.Location = new Point(0, 720);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(840, 22);
+            statusStrip1.TabIndex = 13;
+            statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel_version
+            // 
+            toolStripStatusLabel_version.Name = "toolStripStatusLabel_version";
+            toolStripStatusLabel_version.Size = new Size(62, 17);
+            toolStripStatusLabel_version.Text = "Up to date";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(840, 742);
+            Controls.Add(statusStrip1);
             Controls.Add(groupBoxProgress);
             Controls.Add(toolStrip1);
             Controls.Add(groupBoxSerial);
@@ -336,6 +355,8 @@
             groupBoxSerial.ResumeLayout(false);
             groupBoxSerial.PerformLayout();
             groupBoxProgress.ResumeLayout(false);
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -364,5 +385,7 @@
         private SplitContainer splitContainer1;
         private SplitContainer splitContainer2;
         private ListView listViewAppHeader;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel toolStripStatusLabel_version;
     }
 }

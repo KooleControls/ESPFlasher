@@ -2,13 +2,8 @@ using ESP_Flasher.Logging;
 using ESP_Flasher.Models;
 using ESP_Flasher.Services;
 using ESP_Flasher.UIBinders;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO.Ports;
 using System.Reflection;
-using System.Text;
-using System.Windows.Forms;
 
 namespace ESP_Flasher
 {
@@ -60,6 +55,8 @@ namespace ESP_Flasher
             openArchive = new FirmwareArchive();
 
             UpdateTitle();
+            _ = DoVersionCheck();
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -227,6 +224,41 @@ namespace ESP_Flasher
 #endif
 
         }
+
+
+        private async Task DoVersionCheck()
+        {
+            toolStripStatusLabel_version.Text = "Checking for updates";
+
+            try
+            {
+                Version? version = Assembly.GetExecutingAssembly().GetName().Version;
+                var checker = new GithubUpdateChecker("KooleControls/ESPFlasher");
+                var latestVersion = await checker.GetLatestVersionAsync();
+                if (latestVersion > version)
+                {
+                    toolStripStatusLabel_version.Text = $"Update available: v{latestVersion.ToString()}";
+                    toolStripStatusLabel_version.IsLink = true;
+                    toolStripStatusLabel_version.Click += (sender, e) => {
+                        var url = $"https://github.com/KooleControls/ESPFlasher/releases";
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = url,
+                            UseShellExecute = true
+                        });
+                    };
+                }
+                else
+                {
+                    toolStripStatusLabel_version.Text = "Up to date";
+                }
+            }catch (Exception ex)
+            {
+                toolStripStatusLabel_version.Text = "Error while checking for updates";
+            }
+            
+        }
+
     }
 
 }
