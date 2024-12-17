@@ -237,7 +237,16 @@ namespace ESP_Flasher
                 var latestVersion = await checker.GetLatestVersionAsync();
                 if (latestVersion > version)
                 {
-                    toolStripStatusLabel_version.Text = $"v{latestVersion.ToString()} available at https://github.com/KooleControls/ESPFlasher/releases";
+                    toolStripStatusLabel_version.Text = $"Update available: v{latestVersion.ToString()}";
+                    toolStripStatusLabel_version.IsLink = true;
+                    toolStripStatusLabel_version.Click += (sender, e) => {
+                        var url = $"https://github.com/KooleControls/ESPFlasher/releases";
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = url,
+                            UseShellExecute = true
+                        });
+                    };
                 }
                 else
                 {

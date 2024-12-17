@@ -48,7 +48,11 @@ jobs:
 
     - name: Create zip archive (Portable)
       run: |
-        powershell Compress-Archive -Path ./publish/portable/* -DestinationPath ./ESPFlasher_Portable.zip
+        $tag = "${{ github.ref_name }}"
+        $zipName = "ESPFlasher_Portable_$tag.zip"
+        Write-Output "Creating $zipName..."
+        powershell Compress-Archive -Path ./publish/portable/* -DestinationPath ./$zipName
+
 
 #    - name: Publish the application (ClickOnce)
 #      shell: pwsh
@@ -80,10 +84,11 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./ESPFlasher_Portable.zip
-        asset_name: ESPFlasher_Portable.zip
+        asset_path: ./ESPFlasher_Portable_${{ github.ref_name }}.zip
+        asset_name: ESPFlasher_Portable_${{ github.ref_name }}.zip
         asset_content_type: application/zip
         label: "ESP Flasher Portable Version"
+
 
 #    - name: Upload ClickOnce Installer
 #      id: upload-release-asset-clickonce

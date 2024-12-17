@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxArchive = new GroupBox();
             splitContainer1 = new SplitContainer();
             splitContainer2 = new SplitContainer();
@@ -337,6 +338,7 @@
             Controls.Add(groupBoxLog);
             Controls.Add(groupBoxActions);
             Controls.Add(groupBoxArchive);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
             Text = "Form1";
             Load += Form1_Load;
