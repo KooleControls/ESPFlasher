@@ -228,44 +228,35 @@ namespace ESP_Flasher
 
         private async Task DoVersionCheck()
         {
-            toolStripStatusLabel_version.Text = "https://github.com/KooleControls/ESPFlasher/releases";
-            toolStripStatusLabel_version.IsLink = true;
-            toolStripStatusLabel_version.Click += (sender, e) => {
-                var url = $"https://github.com/KooleControls/ESPFlasher/releases";
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            toolStripStatusLabel_version.Text = "Checking for updates";
+
+            try
+            {
+                Version? version = Assembly.GetExecutingAssembly().GetName().Version;
+                var checker = new GithubUpdateChecker("KooleControls", "ESPFlasher");
+                var latestVersion = await checker.GetLatestVersionAsync();
+                if (latestVersion > version)
                 {
-                    FileName = url,
-                    UseShellExecute = true
-                });
-            };
-
-            //try
-            //{
-            //    Version? version = Assembly.GetExecutingAssembly().GetName().Version;
-            //    var checker = new GithubUpdateChecker("KooleControls/ESPFlasher");
-            //    var latestVersion = await checker.GetLatestVersionAsync();
-            //    if (latestVersion > version)
-            //    {
-            //        toolStripStatusLabel_version.Text = $"Update available: v{latestVersion.ToString()}";
-            //        toolStripStatusLabel_version.IsLink = true;
-            //        toolStripStatusLabel_version.Click += (sender, e) => {
-            //            var url = $"https://github.com/KooleControls/ESPFlasher/releases";
-            //            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            //            {
-            //                FileName = url,
-            //                UseShellExecute = true
-            //            });
-            //        };
-            //    }
-            //    else
-            //    {
-            //        toolStripStatusLabel_version.Text = "Up to date";
-            //    }
-            //}catch (Exception ex)
-            //{
-            //    toolStripStatusLabel_version.Text = "Error while checking for updates";
-            //}
-
+                    toolStripStatusLabel_version.Text = $"Update available: v{latestVersion.ToString()}";
+                    toolStripStatusLabel_version.IsLink = true;
+                    toolStripStatusLabel_version.Click += (sender, e) => {
+                        var url = $"https://github.com/KooleControls/ESPFlasher/releases";
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = url,
+                            UseShellExecute = true
+                        });
+                    };
+                }
+                else
+                {
+                    toolStripStatusLabel_version.Text = "Up to date";
+                }
+            }catch (Exception ex)
+            {
+                toolStripStatusLabel_version.Text = "Error while checking for updates";
+            }
+            
         }
 
     }

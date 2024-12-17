@@ -35,4 +35,8 @@
     <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Octokit" Version="13.0.1" />
+  </ItemGroup>
+
 </Project>
