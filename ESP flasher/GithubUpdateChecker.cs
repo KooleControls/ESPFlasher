@@ -1,69 +1,67 @@
-﻿namespace ESP_Flasher
+﻿using System;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+namespace ESP_Flasher
 {
-    using System;
-    using System.Net.Http;
-    using System.Text.Json;
-    using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
+    //public class GithubUpdateChecker
+    //{
+    //    private readonly string _apiUrl;
 
-    public class GithubUpdateChecker
-    {
-        private readonly string _apiUrl;
+    //    public GithubUpdateChecker(string path)
+    //    {
+    //        if (string.IsNullOrWhiteSpace(path))
+    //            throw new ArgumentException("Path cannot be null or empty.");
 
-        public GithubUpdateChecker(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-                throw new ArgumentException("Path cannot be null or empty.");
+    //        // Validate the GitHub repository path format (owner/repo)
+    //        if (!Regex.IsMatch(path, @"^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"))
+    //            throw new ArgumentException("Invalid GitHub repository format. Expected 'owner/repo'.");
 
-            // Validate the GitHub repository path format (owner/repo)
-            if (!Regex.IsMatch(path, @"^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"))
-                throw new ArgumentException("Invalid GitHub repository format. Expected 'owner/repo'.");
+    //        _apiUrl = $"https://api.github.com/repos/{path}/releases/latest";
+    //    }
 
-            _apiUrl = $"https://api.github.com/repos/{path}/releases/latest";
-        }
+    //    public async Task<Version> GetLatestVersionAsync()
+    //    {
+    //        using var httpClient = new HttpClient();
 
-        public async Task<Version> GetLatestVersionAsync()
-        {
-            using var httpClient = new HttpClient();
+    //        // Use a well-known browser User-Agent to prevent blocks
+    //        httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0");
 
-            // Use a well-known browser User-Agent to prevent blocks
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0");
+    //        try
+    //        {
+    //            // Fetch response as a string
+    //            var rawResponse = await httpClient.GetStringAsync(_apiUrl);
 
-            try
-            {
-                // Fetch response as a string
-                var rawResponse = await httpClient.GetStringAsync(_apiUrl);
+    //            // Deserialize response into a specific class
+    //            var response = JsonSerializer.Deserialize<GitHubRelease>(rawResponse);
 
-                // Deserialize response into a specific class
-                var response = JsonSerializer.Deserialize<GitHubRelease>(rawResponse);
+    //            if (response == null || string.IsNullOrWhiteSpace(response.tag_name))
+    //                throw new InvalidOperationException("Failed to fetch the latest release information from the repository.");
 
-                if (response == null || string.IsNullOrWhiteSpace(response.tag_name))
-                    throw new InvalidOperationException("Failed to fetch the latest release information from the repository.");
+    //            // Ensure the tag_name is a valid version string
+    //            var versionString = response.tag_name.TrimStart('v');
 
-                // Ensure the tag_name is a valid version string
-                var versionString = response.tag_name.TrimStart('v');
+    //            if (!Version.TryParse(versionString, out var latestVersion))
+    //                throw new InvalidOperationException($"The latest tag '{response.tag_name}' is not a valid version.");
 
-                if (!Version.TryParse(versionString, out var latestVersion))
-                    throw new InvalidOperationException($"The latest tag '{response.tag_name}' is not a valid version.");
-
-                return latestVersion;
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new InvalidOperationException("Network error while fetching GitHub release information.", ex);
-            }
-            catch (JsonException ex)
-            {
-                throw new InvalidOperationException("Failed to parse the GitHub response.", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("An unexpected error occurred.", ex);
-            }
-        }
-
-
-    }
+    //            return latestVersion;
+    //        }
+    //        catch (HttpRequestException ex)
+    //        {
+    //            throw new InvalidOperationException("Network error while fetching GitHub release information.", ex);
+    //        }
+    //        catch (JsonException ex)
+    //        {
+    //            throw new InvalidOperationException("Failed to parse the GitHub response.", ex);
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            throw new InvalidOperationException("An unexpected error occurred.", ex);
+    //        }
+    //    }
+    //}
 
 
     public class Asset
