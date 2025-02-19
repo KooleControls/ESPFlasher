@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ESPTool\ESPTool\ESPTool.csproj" />
+    <ProjectReference Include="..\ESPTool\ESPTool\EspDotNet.csproj" />
   </ItemGroup>
 
   <ItemGroup>

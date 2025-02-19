@@ -153,6 +153,9 @@ namespace ESP_Flasher
                 UiEnabled(false);
                 _richTextBoxLoggerFactory.Clear();
                 cancelButtonSource = new CancellationTokenSource();
+                _flashingService.UseCompression = checkBoxCompression.Checked;
+                _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
+                _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
                 await _flashingService.EraseFlashAsync(cancelButtonSource.Token);
                 _flashingService.DisposeDevice();
             }
