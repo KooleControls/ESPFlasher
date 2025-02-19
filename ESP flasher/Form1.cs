@@ -154,6 +154,7 @@ namespace ESP_Flasher
                 _richTextBoxLoggerFactory.Clear();
                 cancelButtonSource = new CancellationTokenSource();
                 await _flashingService.EraseFlashAsync(cancelButtonSource.Token);
+                _flashingService.DisposeDevice();
             }
             catch (Exception ex)
             {
@@ -182,6 +183,7 @@ namespace ESP_Flasher
                 _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
                 _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
                 await _flashingService.FlashAsync(openArchive, cancelButtonSource.Token, _progressBarBinder.Bind());
+                _flashingService.DisposeDevice();
             }
             catch (Exception ex)
             {

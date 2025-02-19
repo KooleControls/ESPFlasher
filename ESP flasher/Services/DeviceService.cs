@@ -1,10 +1,14 @@
 ﻿using ESP_Flasher.Models;
-using ESPTool.Devices;
+using ESPTool;
+using ESPTool.Loaders;
+using ESPTool.Loaders.SoftLoader;
+using ESPTool.Tools;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ESP_Flasher.Services
 {
@@ -12,14 +16,12 @@ namespace ESP_Flasher.Services
     {
         public int BaudRate { get; set; } = 921600;
         public string SerialPort { get; set; } = "COM30";
-        public bool UseSoftLoader { get; set; } = true;
         public bool UseCompression { get; set; } = false;
-
-        ESP32Device? _device = null;
 
         private readonly ArchiveService _archiveService;
         private readonly DeviceManager _deviceManager;
         private readonly ILogger<DeviceService> _logger;
+        private SoftLoader? loader;
 
         public DeviceService(ArchiveService archiveService, ILoggerFactory loggerFactory)
         {
@@ -32,38 +34,33 @@ namespace ESP_Flasher.Services
         {
             // Get the device, default baud rate is 115200
             _logger.LogInformation("Initializing device on {SerialPort}", SerialPort);
-            IDevice device = await _deviceManager.InitializeAsync(SerialPort, 115200, token);
+            _deviceManager.OpenSerial(SerialPort, 115200);
 
-            switch (device)
-            {
-                case ESP32Device espDevice:
-                    _device = espDevice;
-                    break;
-                default:
-                    _logger.LogError("Unsupported device type: {DeviceType}", device.GetType());
-                    throw new Exception($"Device not supported {device.GetType()}");
-            }
+            // Enter the bootloader
+            var bootloader = await _deviceManager.StartBootloader();
 
             // Change baud if required
             if (BaudRate != 115200)
             {
                 _logger.LogInformation("Switching baud rate to {BaudRate}", BaudRate);
-                await _device.ChangeBaudAsync(BaudRate, token);
+                await bootloader.ChangeBaudAsync(BaudRate, 115200, token);
             }
 
-            // Start the softloader if required
-            if (UseSoftLoader)
-            {
-                _logger.LogInformation("Starting softloader");
-                await _device.StartSoftloaderAsync(token);
-            }
+            // Enter the softloader
+            loader = await _deviceManager.StartSoftloader(bootloader);
+
+        }
+
+        public void DisposeDevice()
+        {
+            //_device?.Dispose();
         }
 
         // Flash the firmware to the device
         public async Task FlashAsync(FirmwareArchive archive, CancellationToken token = default, IProgress<float> progress = null)
         {
             await InitializeDevice(token);
-            if (_device == null)
+            if (loader == null)
             {
                 _logger.LogError("Device initialization failed");
                 throw new Exception("Device initialization failed");
@@ -87,19 +84,27 @@ namespace ESP_Flasher.Services
                     progress?.Report(overallProgress);
                 });
 
+                FirmwareSender sender = new FirmwareSender(loader);
+                sender.Progress = progress; 
+                sender.UploadMethod = UseCompression ? FirmwareUploadOptions.FlashDeflated : FirmwareUploadOptions.Flash;
+
+                // Update the total bytes uploaded after each entry is successfully uploaded
+                bytesUploaded += size;
+
                 try
                 {
                     if (UseCompression)
                     {
-                        await _device.UploadCompressedToFlashAsync(stream, size, (UInt32)entry.Address, false, 0, token, entryProgress);
+                        
+
+                        await loader.UploadCompressedToFlashAsync(stream, size, (UInt32)entry.Address, false, 0, token, entryProgress);
                     }
                     else
                     {
-                        await _device.UploadToFlashAsync(stream, size, (UInt32)entry.Address, false, 0, token, entryProgress);
+                        await loader.UploadToFlashAsync(stream, size, (UInt32)entry.Address, false, 0, token, entryProgress);
                     }
 
-                    // Update the total bytes uploaded after each entry is successfully uploaded
-                    bytesUploaded += size;
+                    
                 }
                 catch (Exception ex)
                 {
@@ -110,6 +115,8 @@ namespace ESP_Flasher.Services
 
             await _device.ResetDeviceAsync(token); // Reset the device after flashing
         }
+
+
 
         // Erase the firmware from the device
         public async Task EraseFlashAsync(CancellationToken token = default)
