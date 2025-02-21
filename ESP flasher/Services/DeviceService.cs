@@ -1,9 +1,7 @@
 ﻿using ESP_Flasher.Models;
 using EspDotNet;
-using EspDotNet.Loaders.SoftLoader;
 using EspDotNet.Tools.Firmware;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace ESP_Flasher.Services
 {
@@ -38,6 +36,9 @@ namespace ESP_Flasher.Services
             var softloader = DefaultFirmwareProviders.GetSoftloaderForDevice(chipType);
             await _espTool.StartSoftloaderAsync(softloader, token);
             _logger.LogInformation("Softloader started");
+
+            await _espTool.ChangeBaudAsync(BaudRate, token);
+            _logger.LogInformation($"Switched baudrade to {BaudRate}");
         }
 
         public void DisposeDevice()
@@ -48,16 +49,11 @@ namespace ESP_Flasher.Services
         public async Task FlashAsync(FirmwareArchive archive, CancellationToken token = default, IProgress<float> progress = null)
         {
             await InitializeDevice(token);
-
-            FirmwareUploadConfig config = new FirmwareUploadConfig
-            {
-                BlockSize = 2048,
-                ExecuteAfterSending = false,
-                UploadMethod = FirmwareUploadOptions.FlashDeflated
-            };
-
-            await _espTool.UploadFirmwareAsync(archive, token, progress);
+            var uploadMethod = UseCompression ? FirmwareUploadMethods.FlashDeflated : FirmwareUploadMethods.Flash;
+            await _espTool.UploadFirmwareAsync(archive, uploadMethod, token, progress);
+            _logger.LogInformation("Firmware uploaded");
             await _espTool.ResetDeviceAsync(token);
+            _logger.LogInformation("Device resetted");
         }
 
         public async Task EraseFlashAsync(CancellationToken token = default)
