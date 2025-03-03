@@ -28,14 +28,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ESPTool\ESPTool\EspDotNet.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ESPTool" Version="2.2.0" />
     <PackageReference Include="Octokit" Version="13.0.1" />
   </ItemGroup>
 

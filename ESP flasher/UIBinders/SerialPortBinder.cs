@@ -11,9 +11,6 @@ namespace ESP_Flasher.UIBinders
         // Configurable list of baud rates and default baud rate
         public List<int> BaudRates { get; set; } = new List<int> { 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 };
         public int DefaultBaudRate { get; set; } = 921600;
-
-        // Configurable list of serial ports and default serial port
-        public List<string> SerialPorts { get; set; } = SerialPort.GetPortNames().ToList();
         public string DefaultSerialPort { get; set; } = "COM30";
 
         public SerialPortBinder(ComboBox comboBoxSerialPort, ComboBox comboBoxBaudRate)
@@ -30,14 +27,16 @@ namespace ESP_Flasher.UIBinders
         {
             _comboBoxSerialPort.Items.Clear();
 
+            var availablePorts = SerialPort.GetPortNames().ToList();
+
             // Load the configured or detected serial ports
-            foreach (string port in SerialPorts)
+            foreach (string port in availablePorts)
             {
                 _comboBoxSerialPort.Items.Add(port);
             }
 
             // Set the default port if it exists in the list
-            if (SerialPorts.Contains(DefaultSerialPort))
+            if (availablePorts.Contains(DefaultSerialPort))
             {
                 _comboBoxSerialPort.SelectedItem = DefaultSerialPort;
             }

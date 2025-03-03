@@ -1,5 +1,6 @@
 ﻿using ESP_Flasher.Models;
 using EspDotNet;
+using EspDotNet.Config;
 using EspDotNet.Tools.Firmware;
 using Microsoft.Extensions.Logging;
 
@@ -18,6 +19,20 @@ namespace ESP_Flasher.Services
         public DeviceService(ArchiveService archiveService, ILoggerFactory loggerFactory)
         {
             _archiveService = archiveService;
+            ESPToolConfig config = new ESPToolConfig
+            { 
+                BootloaderSequence = new PinSequence
+                {
+                    Steps =
+                    [
+                        new PinSequenceStep {  Dtr = false, Rts = true, Delay = TimeSpan.FromMilliseconds(100) },
+                        new PinSequenceStep {  Dtr = true,  Rts = false, Delay = TimeSpan.FromMilliseconds(600) },
+                        new PinSequenceStep {  Dtr = false, Rts = false, Delay = TimeSpan.FromMilliseconds(0) },
+                    ]
+                }
+            };
+
+
             _espTool = new ESPTool();
             _logger = loggerFactory.CreateLogger<DeviceService>();
         }
@@ -44,6 +59,7 @@ namespace ESP_Flasher.Services
         public void DisposeDevice()
         {
             _espTool.CloseSerial();
+            _logger.LogInformation("Closed port {SerialPort}", SerialPort);
         }
 
         public async Task FlashAsync(FirmwareArchive archive, CancellationToken token = default, IProgress<float> progress = null)
