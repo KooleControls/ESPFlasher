@@ -1,6 +1,9 @@
 ﻿using ESP_Flasher.Models;
 using EspDotNet;
+using EspDotNet.Communication;
 using EspDotNet.Config;
+using EspDotNet.Loaders.SoftLoader;
+using EspDotNet.Loaders;
 using EspDotNet.Tools.Firmware;
 using Microsoft.Extensions.Logging;
 
@@ -13,71 +16,78 @@ namespace ESP_Flasher.Services
         public bool UseCompression { get; set; } = false;
 
         private readonly ArchiveService _archiveService;
-        private readonly ESPTool _espTool;
+        private readonly ESPToolbox _toolbox;
         private readonly ILogger<DeviceService> _logger;
+
+        // Internals needed for device session
+        private Communicator? _communicator;
+        private ILoader? _bootloader;
+        private SoftLoader? _softloader;
+        private ChipTypes _chipType;
 
         public DeviceService(ArchiveService archiveService, ILoggerFactory loggerFactory)
         {
             _archiveService = archiveService;
-            ESPToolConfig config = new ESPToolConfig
-            { 
-                BootloaderSequence = new PinSequence
-                {
-                    Steps =
-                    [
-                        new PinSequenceStep {  Dtr = false, Rts = true, Delay = TimeSpan.FromMilliseconds(100) },
-                        new PinSequenceStep {  Dtr = true,  Rts = false, Delay = TimeSpan.FromMilliseconds(600) },
-                        new PinSequenceStep {  Dtr = false, Rts = false, Delay = TimeSpan.FromMilliseconds(0) },
-                    ]
-                }
-            };
-
-
-            _espTool = new ESPTool();
+            _toolbox = new ESPToolbox();
             _logger = loggerFactory.CreateLogger<DeviceService>();
         }
 
         public async Task InitializeDevice(CancellationToken token = default)
         {
-            _espTool.OpenSerial(SerialPort, 115200); // Default baud rate is 115200
+            _communicator = _toolbox.CreateCommunicator();
+            _toolbox.OpenSerial(_communicator, SerialPort, 115200); // start at default baud
             _logger.LogInformation("Opened port {SerialPort}", SerialPort);
 
-            await _espTool.StartBootloaderAsync(token);
+            _bootloader = await _toolbox.StartBootloaderAsync(_communicator, token);
             _logger.LogInformation("Bootloader started");
 
-            var chipType = await _espTool.DetectChipTypeAsync(token);
-            _logger.LogInformation("Detected '{ChipType}'", chipType);
+            _chipType = await _toolbox.DetectChipTypeAsync(_bootloader, token);
+            _logger.LogInformation("Detected chip type: {ChipType}", _chipType);
 
-            var softloader = DefaultFirmwareProviders.GetSoftloaderForDevice(chipType);
-            await _espTool.StartSoftloaderAsync(softloader, token);
+            _softloader = await _toolbox.StartSoftloaderAsync(_communicator, _bootloader, _chipType, token);
             _logger.LogInformation("Softloader started");
 
-            await _espTool.ChangeBaudAsync(BaudRate, token);
-            _logger.LogInformation($"Switched baudrade to {BaudRate}");
+            await _toolbox.ChangeBaudAsync(_communicator, _softloader, BaudRate, token);
+            _logger.LogInformation("Baudrate changed to {BaudRate}", BaudRate);
         }
 
-        public void DisposeDevice()
-        {
-            _espTool.CloseSerial();
-            _logger.LogInformation("Closed port {SerialPort}", SerialPort);
-        }
-
-        public async Task FlashAsync(FirmwareArchive archive, CancellationToken token = default, IProgress<float> progress = null)
+        public async Task FlashAsync(FirmwareArchive archive, CancellationToken token = default, IProgress<float>? progress = null)
         {
             await InitializeDevice(token);
-            var uploadMethod = UseCompression ? FirmwareUploadMethods.FlashDeflated : FirmwareUploadMethods.Flash;
-            await _espTool.UploadFirmwareAsync(archive, uploadMethod, token, progress);
+
+            var uploadTool = UseCompression
+                ? _toolbox.CreateUploadFlashDeflatedTool(_softloader!, _chipType)
+                : _toolbox.CreateUploadFlashTool(_softloader!, _chipType);
+
+            await _toolbox.UploadFirmwareAsync(uploadTool, archive, token, progress);
             _logger.LogInformation("Firmware uploaded");
-            await _espTool.ResetDeviceAsync(token);
-            _logger.LogInformation("Device resetted");
+
+            await _toolbox.ResetDeviceAsync(_communicator!, token);
+            _logger.LogInformation("Device reset");
         }
 
         public async Task EraseFlashAsync(CancellationToken token = default)
         {
             await InitializeDevice(token);
+            await _toolbox.EraseFlashAsync(_softloader!, token);
+            _logger.LogInformation("Flash erased");
 
-            await _espTool.EraseFlashAsync(token);
-            _logger.LogInformation("Erasing flash finished");
+            await _toolbox.ResetDeviceAsync(_communicator!, token);
+            _logger.LogInformation("Device reset");
+        }
+
+        public void DisposeDevice()
+        {
+            if (_communicator != null)
+            {
+                _toolbox.CloseSerial(_communicator);
+                _logger.LogInformation("Closed port {SerialPort}", SerialPort);
+            }
+
+            _communicator = null;
+            _bootloader = null;
+            _softloader = null;
+            _chipType = ChipTypes.Unknown;
         }
     }
 }
