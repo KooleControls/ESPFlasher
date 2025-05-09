@@ -41,7 +41,7 @@ namespace ESP_Flasher
 
             // Instantiate services with the logger factory
             _archiveService = new ArchiveService(_richTextBoxLoggerFactory);
-            _flashingService = new DeviceService(_archiveService, _richTextBoxLoggerFactory);
+            _flashingService = new DeviceService(_richTextBoxLoggerFactory);
 
             // Bind the UI elements to data
             _serialPortBinder = new SerialPortBinder(comboBoxSerialPort, comboBoxBaudRate);

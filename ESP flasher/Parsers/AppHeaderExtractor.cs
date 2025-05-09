@@ -42,13 +42,14 @@ namespace ESP_Flasher.Services
             return null;
         }
 
+
         /// <summary>
         /// Parses the application header from the binary stream.
         /// </summary>
         /// <param name="stream">The memory stream containing the binary data.</param>
         /// <param name="token">Cancellation token for async operations.</param>
         /// <returns>An AppHeader object if valid, otherwise null.</returns>
-        public async Task<AppHeader?> ParseAppHeaderAsync(MemoryStream stream, CancellationToken token = default)
+        public async Task<AppHeader?> ParseAppHeaderAsync(Stream stream, CancellationToken token = default)
         {
             try
             {
@@ -105,7 +106,7 @@ namespace ESP_Flasher.Services
 
                 header.AppElfSha256 = reader.ReadBytes(32); // SHA256 of ELF file
 
-                return header;
+                return await Task.FromResult(header);
             }
             catch (Exception ex)
             {

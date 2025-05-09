@@ -77,7 +77,7 @@ namespace ESP_Flasher.Services
                     }
                     else
                     {
-                        _logger.LogWarning("Invalid partition entry detected, skipping...");
+                        _logger.LogInformation("Invalid partition entry detected, skipping...");
                     }
                 }
 

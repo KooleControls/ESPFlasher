@@ -15,7 +15,6 @@ namespace ESP_Flasher.Services
         public string SerialPort { get; set; } = "COM30";
         public bool UseCompression { get; set; } = false;
 
-        private readonly ArchiveService _archiveService;
         private readonly ESPToolbox _toolbox;
         private readonly ILogger<DeviceService> _logger;
 
@@ -25,15 +24,15 @@ namespace ESP_Flasher.Services
         private SoftLoader? _softloader;
         private ChipTypes _chipType;
 
-        public DeviceService(ArchiveService archiveService, ILoggerFactory loggerFactory)
+        public DeviceService(ILoggerFactory loggerFactory)
         {
-            _archiveService = archiveService;
             _toolbox = new ESPToolbox();
             _logger = loggerFactory.CreateLogger<DeviceService>();
         }
 
-        public async Task InitializeDevice(CancellationToken token = default)
+        private async Task InitializeDevice(CancellationToken token = default)
         {
+
             _communicator = _toolbox.CreateCommunicator();
             _toolbox.OpenSerial(_communicator, SerialPort, 115200); // start at default baud
             _logger.LogInformation("Opened port {SerialPort}", SerialPort);
@@ -49,38 +48,64 @@ namespace ESP_Flasher.Services
 
             await _toolbox.ChangeBaudAsync(_communicator, _softloader, BaudRate, token);
             _logger.LogInformation("Baudrate changed to {BaudRate}", BaudRate);
+
         }
 
         public async Task FlashAsync(FirmwareArchive archive, CancellationToken token = default, IProgress<float>? progress = null)
         {
-            await InitializeDevice(token);
+            try
+            {
+                await InitializeDevice(token);
 
-            var uploadTool = UseCompression
-                ? _toolbox.CreateUploadFlashDeflatedTool(_softloader!, _chipType)
-                : _toolbox.CreateUploadFlashTool(_softloader!, _chipType);
+                var uploadTool = UseCompression
+                    ? _toolbox.CreateUploadFlashDeflatedTool(_softloader!, _chipType)
+                    : _toolbox.CreateUploadFlashTool(_softloader!, _chipType);
 
-            await _toolbox.UploadFirmwareAsync(uploadTool, archive, token, progress);
-            _logger.LogInformation("Firmware uploaded");
+                await _toolbox.UploadFirmwareAsync(uploadTool, archive, token, progress);
+                _logger.LogInformation("Firmware uploaded");
 
-            await _toolbox.ResetDeviceAsync(_communicator!, token);
-            _logger.LogInformation("Device reset");
+                await _toolbox.ResetDeviceAsync(_communicator!, token);
+                _logger.LogInformation("Device reset");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to flash device");
+                throw;
+            }
+            finally
+            {
+                DisposeDevice();
+            }
         }
 
         public async Task EraseFlashAsync(CancellationToken token = default)
         {
-            await InitializeDevice(token);
-            await _toolbox.EraseFlashAsync(_softloader!, token);
-            _logger.LogInformation("Flash erased");
+            try
+            {
+                await InitializeDevice(token);
+                await _toolbox.EraseFlashAsync(_softloader!, token);
+                _logger.LogInformation("Flash erased");
 
-            await _toolbox.ResetDeviceAsync(_communicator!, token);
-            _logger.LogInformation("Device reset");
+                await _toolbox.ResetDeviceAsync(_communicator!, token);
+                _logger.LogInformation("Device reset");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to erase flash");
+                throw;
+            }
+            finally
+            {
+                DisposeDevice();
+            }
         }
 
         public void DisposeDevice()
         {
             if (_communicator != null)
             {
-                _toolbox.CloseSerial(_communicator);
+                _communicator.Dispose();
                 _logger.LogInformation("Closed port {SerialPort}", SerialPort);
             }
 
