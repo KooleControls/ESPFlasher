@@ -73,7 +73,7 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
-        body_path: notes/${{ github.ref_name }}.md  # Reference the correct release notes file based on the tag
+        #body_path: notes/${{ github.ref_name }}.md  # Reference the correct release notes file based on the tag
         draft: false
         prerelease: false
 
