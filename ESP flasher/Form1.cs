@@ -88,7 +88,7 @@ namespace ESP_Flasher
 
             if (dialog.ShowDialog() != DialogResult.OK)
                 return;
-            
+
             openArchive = await _archiveService.LoadFromZip(dialog.FileName) ?? openArchive;
             _archiveBinder.Populate(openArchive);
             await _partitionBinder.Populate(openArchive);
@@ -176,7 +176,7 @@ namespace ESP_Flasher
                 logger.LogError($"No archive opened");
                 return;
             }
-                
+
             try
             {
                 UiEnabled(false);
@@ -199,10 +199,35 @@ namespace ESP_Flasher
             }
         }
 
+        private async void buttonRead_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                UiEnabled(false);
+                _richTextBoxLoggerFactory.Clear();
+                cancelButtonSource = new CancellationTokenSource();
+                _flashingService.UseCompression = checkBoxCompression.Checked;
+                _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
+                _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
+
+                MemoryStream stream = new MemoryStream();
+                await _flashingService.ReadFlashAsync(stream, cancelButtonSource.Token, _progressBarBinder.Bind());
+                _flashingService.DisposeDevice();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to erase flash");
+            }
+            finally
+            {
+                UiEnabled(true);
+            }
+        }
+
         private void UiEnabled(bool enabled)
         {
             groupBoxArchive.Enabled = enabled;
-            groupBoxSerial.Enabled = enabled;   
+            groupBoxSerial.Enabled = enabled;
             groupBoxLog.Enabled = enabled;
             groupBoxActions.Enabled = enabled;
 
@@ -244,7 +269,8 @@ namespace ESP_Flasher
                 {
                     toolStripStatusLabel_version.Text = $"Update available: v{latestVersion.ToString()}";
                     toolStripStatusLabel_version.IsLink = true;
-                    toolStripStatusLabel_version.Click += (sender, e) => {
+                    toolStripStatusLabel_version.Click += (sender, e) =>
+                    {
                         var url = $"https://github.com/KooleControls/ESPFlasher/releases";
                         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                         {
@@ -257,11 +283,12 @@ namespace ESP_Flasher
                 {
                     toolStripStatusLabel_version.Text = "Up to date";
                 }
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 toolStripStatusLabel_version.Text = "Error while checking for updates";
             }
-            
+
         }
 
     }

@@ -53,6 +53,7 @@
             groupBoxProgress = new GroupBox();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel_version = new ToolStripStatusLabel();
+            buttonRead = new Button();
             groupBoxArchive.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -147,6 +148,7 @@
             // groupBoxActions
             // 
             groupBoxActions.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxActions.Controls.Add(buttonRead);
             groupBoxActions.Controls.Add(checkBoxCompression);
             groupBoxActions.Controls.Add(buttonErase);
             groupBoxActions.Controls.Add(buttonProgram);
@@ -326,6 +328,16 @@
             toolStripStatusLabel_version.Size = new Size(62, 17);
             toolStripStatusLabel_version.Text = "Up to date";
             // 
+            // buttonRead
+            // 
+            buttonRead.Location = new Point(344, 23);
+            buttonRead.Name = "buttonRead";
+            buttonRead.Size = new Size(75, 23);
+            buttonRead.TabIndex = 12;
+            buttonRead.Text = "Read";
+            buttonRead.UseVisualStyleBackColor = true;
+            buttonRead.Click += buttonRead_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -389,5 +401,6 @@
         private ListView listViewAppHeader;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel_version;
+        private Button buttonRead;
     }
 }

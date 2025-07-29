@@ -6,6 +6,8 @@ using EspDotNet.Loaders.SoftLoader;
 using EspDotNet.Loaders;
 using EspDotNet.Tools.Firmware;
 using Microsoft.Extensions.Logging;
+using EspDotNet.Tools;
+using System;
 
 namespace ESP_Flasher.Services
 {
@@ -57,6 +59,7 @@ namespace ESP_Flasher.Services
             {
                 await InitializeDevice(token);
 
+
                 var uploadTool = UseCompression
                     ? _toolbox.CreateUploadFlashDeflatedTool(_softloader!, _chipType)
                     : _toolbox.CreateUploadFlashTool(_softloader!, _chipType);
@@ -100,6 +103,36 @@ namespace ESP_Flasher.Services
                 DisposeDevice();
             }
         }
+
+        public async Task ReadFlashAsync(Stream destination, CancellationToken token = default, IProgress<float>? progress = null)
+        {
+            try
+            {
+                await InitializeDevice(token);
+                var readFlashTool = _toolbox.CreateReadFlashTool(_communicator!, _softloader!, _chipType);
+                readFlashTool.Progress = progress ?? new Progress<float>();
+
+                using var fileStream = File.Create("C:\\Users\\bas\\Desktop\\test.hex");
+
+                // log parition
+                await readFlashTool.ReadFlashAsync(0xA3000, 0x74D000, fileStream, token);
+                _logger.LogInformation("Flash read");
+
+                await _toolbox.ResetDeviceAsync(_communicator!, token);
+                _logger.LogInformation("Device reset");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to erase flash");
+                throw;
+            }
+            finally
+            {
+                DisposeDevice();
+            }
+        }
+
 
         public void DisposeDevice()
         {
