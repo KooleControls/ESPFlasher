@@ -29,18 +29,23 @@ namespace ESP_Flasher.UIBinders
             _listView.Items.Clear();
 
             PartitionTable table = await _archiveService.ExtractPartitionTable(archive) ?? new PartitionTable();
+            Populate(table);
+        }
 
-
-            foreach (var partition in table.Partitions)
+        public void Populate(PartitionTable table)
+        {
+            foreach (var partitionEntry in table.Partitions)
             {
                 // Create a ListViewItem for each entry
-                ListViewItem item = new ListViewItem(partition.Name);
+                ListViewItem item = new ListViewItem(partitionEntry.Name);
+                item.Tag = partitionEntry;
 
                 // Format the address and size as hexadecimal
-                item.SubItems.Add($"0x{partition.Type:X}");
-                item.SubItems.Add($"0x{partition.Subtype:X}");
-                item.SubItems.Add($"0x{partition.Address:X}");
-                item.SubItems.Add($"0x{partition.Size:X}");
+                item.SubItems.Add($"0x{partitionEntry.Type:X}");
+                item.SubItems.Add($"0x{partitionEntry.Subtype:X}");
+                item.SubItems.Add($"0x{partitionEntry.Address:X}");
+                item.SubItems.Add($"0x{partitionEntry.Size:X}");
+
 
                 _listView.Items.Add(item);
             }
@@ -48,9 +53,18 @@ namespace ESP_Flasher.UIBinders
             // Auto-resize the columns to fit the content
             _listView.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
+
+        public IEnumerable<PartitionEntry> GetSelected()
+        {
+            foreach (ListViewItem item in _listView.SelectedItems)
+            {
+                if (item.Tag is PartitionEntry entry)
+                {
+                    yield return entry;
+                }
+            }
+        }
     }
-
-
 
 
 }

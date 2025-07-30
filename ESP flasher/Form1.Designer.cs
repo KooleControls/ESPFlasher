@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxArchive = new GroupBox();
             splitContainer1 = new SplitContainer();
@@ -49,11 +50,11 @@
             comboBoxSerialPort = new ComboBox();
             buttonRefresh = new Button();
             groupBoxSerial = new GroupBox();
-            toolStrip1 = new ToolStrip();
+            mainToolStrip = new ToolStrip();
             groupBoxProgress = new GroupBox();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel_version = new ToolStripStatusLabel();
-            buttonRead = new Button();
+            contextMenuStripPartitionTable = new ContextMenuStrip(components);
             groupBoxArchive.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -148,7 +149,6 @@
             // groupBoxActions
             // 
             groupBoxActions.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            groupBoxActions.Controls.Add(buttonRead);
             groupBoxActions.Controls.Add(checkBoxCompression);
             groupBoxActions.Controls.Add(buttonErase);
             groupBoxActions.Controls.Add(buttonProgram);
@@ -293,13 +293,13 @@
             groupBoxSerial.TabStop = false;
             groupBoxSerial.Text = "Serial port";
             // 
-            // toolStrip1
+            // mainToolStrip
             // 
-            toolStrip1.Location = new Point(0, 0);
-            toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(840, 25);
-            toolStrip1.TabIndex = 5;
-            toolStrip1.Text = "toolStrip1";
+            mainToolStrip.Location = new Point(0, 0);
+            mainToolStrip.Name = "mainToolStrip";
+            mainToolStrip.Size = new Size(840, 25);
+            mainToolStrip.TabIndex = 5;
+            mainToolStrip.Text = "toolStrip1";
             // 
             // groupBoxProgress
             // 
@@ -328,15 +328,10 @@
             toolStripStatusLabel_version.Size = new Size(62, 17);
             toolStripStatusLabel_version.Text = "Up to date";
             // 
-            // buttonRead
+            // contextMenuStrip1
             // 
-            buttonRead.Location = new Point(344, 23);
-            buttonRead.Name = "buttonRead";
-            buttonRead.Size = new Size(75, 23);
-            buttonRead.TabIndex = 12;
-            buttonRead.Text = "Read";
-            buttonRead.UseVisualStyleBackColor = true;
-            buttonRead.Click += buttonRead_Click;
+            contextMenuStripPartitionTable.Name = "contextMenuStrip1";
+            contextMenuStripPartitionTable.Size = new Size(181, 26);
             // 
             // Form1
             // 
@@ -345,7 +340,7 @@
             ClientSize = new Size(840, 742);
             Controls.Add(statusStrip1);
             Controls.Add(groupBoxProgress);
-            Controls.Add(toolStrip1);
+            Controls.Add(mainToolStrip);
             Controls.Add(groupBoxSerial);
             Controls.Add(groupBoxLog);
             Controls.Add(groupBoxActions);
@@ -393,7 +388,7 @@
         private RichTextBox richTextBox1;
         private ListView listViewPartitionTable;
         private ListView listViewHexFiles;
-        private ToolStrip toolStrip1;
+        private ToolStrip mainToolStrip;
         private Button buttonCancel;
         private GroupBox groupBoxProgress;
         private SplitContainer splitContainer1;
@@ -401,6 +396,6 @@
         private ListView listViewAppHeader;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel_version;
-        private Button buttonRead;
+        private ContextMenuStrip contextMenuStripPartitionTable;
     }
 }

@@ -3,6 +3,7 @@ using ESP_Flasher.Models;
 using ESP_Flasher.Services;
 using ESP_Flasher.UIBinders;
 using Microsoft.Extensions.Logging;
+using System.IO.Compression;
 using System.Reflection;
 
 namespace ESP_Flasher
@@ -17,9 +18,9 @@ namespace ESP_Flasher
 
         // Services
         private readonly ArchiveService _archiveService;
-        private readonly DeviceService _flashingService;
+        private readonly DeviceService _deviceService;
 
-        // Binders
+        // UI Binders
         private readonly SerialPortBinder _serialPortBinder;
         private readonly ArchiveListViewBinder _archiveBinder;
         private readonly PartitionTableListViewBinder _partitionBinder;
@@ -32,6 +33,7 @@ namespace ESP_Flasher
         CancellationTokenSource? cancelButtonSource;
         ILogger<Form1> logger;
 
+
         public Form1()
         {
             InitializeComponent();
@@ -41,7 +43,7 @@ namespace ESP_Flasher
 
             // Instantiate services with the logger factory
             _archiveService = new ArchiveService(_richTextBoxLoggerFactory);
-            _flashingService = new DeviceService(_richTextBoxLoggerFactory);
+            _deviceService = new DeviceService(_richTextBoxLoggerFactory.CreateLogger<DeviceService>());
 
             // Bind the UI elements to data
             _serialPortBinder = new SerialPortBinder(comboBoxSerialPort, comboBoxBaudRate);
@@ -54,6 +56,8 @@ namespace ESP_Flasher
             logger = _richTextBoxLoggerFactory.CreateLogger<Form1>();
             openArchive = new FirmwareArchive();
 
+            listViewPartitionTable.ContextMenuStrip = contextMenuStripPartitionTable;
+
             UpdateTitle();
             _ = DoVersionCheck();
 
@@ -62,16 +66,80 @@ namespace ESP_Flasher
         private void Form1_Load(object sender, EventArgs e)
         {
             // File Operations
-            toolStrip1.AddMenuItem("File/New").WithAction(NewArchive);
-            toolStrip1.AddMenuItem("File/Open Archive").WithAction(OpenArchiveDialog);
-            toolStrip1.AddMenuItem("File/Save as/Archive").WithAction(SaveArchive).WithToolTip("Creates KCZIP file");
-            toolStrip1.AddMenuItem("File/Save as/Application intel hex").WithAction(SaveApplicationIntelHex).WithToolTip("Creates HEX file to be used in KC220 tool and LM");
-            toolStrip1.AddMenuItem("File/Save as/Archive intel hex").WithAction(SaveArchiveIntelHex).WithToolTip("Creates HEX file including all parititions");
-            toolStrip1.AddMenuItem("File/Exit").WithAction(Close);
+            mainToolStrip.AddMenuItem("File/New").WithAction(NewArchive);
+            mainToolStrip.AddMenuItem("File/Open Archive").WithAction(OpenArchiveDialog);
+            mainToolStrip.AddMenuItem("File/Save as/Archive").WithAction(SaveArchive).WithToolTip("Creates KCZIP file");
+            mainToolStrip.AddMenuItem("File/Save as/Application intel hex").WithAction(SaveApplicationIntelHex).WithToolTip("Creates HEX file to be used in KC220 tool and LM");
+            mainToolStrip.AddMenuItem("File/Save as/Archive intel hex").WithAction(SaveArchiveIntelHex).WithToolTip("Creates HEX file including all partitions");
+            mainToolStrip.AddMenuItem("File/Exit").WithAction(Close);
 
             // Development Tools
-            toolStrip1.AddMenuItem("Development/Open Build folder").WithAction(LoadBuildDirectory);
+            mainToolStrip.AddMenuItem("Development/Open Build folder").WithAction(LoadBuildDirectory);
+            mainToolStrip.AddMenuItem("Development/Read device").WithAction(ReadDevice);
+
+
+            // Partition Table
+            contextMenuStripPartitionTable.AddMenuItem("Read selected to file").WithAction(ReadSelectedToFiles);
         }
+
+        private async void ReadSelectedToFiles()
+        {
+            using var saveDialog = new SaveFileDialog();
+            saveDialog.Filter = "Zip Archive (*.zip)|*.zip";
+            saveDialog.FileName = "flash_backup.zip";
+
+            if (saveDialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            var selectedPartitions = _partitionBinder.GetSelected().ToList();
+            if (selectedPartitions.Count == 0)
+                return;
+
+            using var fileStream = new FileStream(saveDialog.FileName, FileMode.Create);
+            using var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create);
+
+            //await _deviceService.InitializeAsync();
+
+            //var progressBar = _progressBarBinder.Bind();
+
+            long totalBytes = selectedPartitions.Sum(p => (long)p.Size);
+            long bytesReadSoFar = 0;
+
+            foreach (var partitionEntry in selectedPartitions)
+            {
+                var entry = zipArchive.CreateEntry(partitionEntry.Name, CompressionLevel.Optimal);
+                using var entryStream = entry.Open();
+
+                long partitionBytesRead = 0;
+
+                var progress = new Progress<float>(partitionProgress =>
+                {
+                    long newBytesRead = (long)(partitionProgress * partitionEntry.Size);
+                    long delta = newBytesRead - partitionBytesRead;
+                    partitionBytesRead = newBytesRead;
+
+                    bytesReadSoFar += delta;
+                    float totalProgress = (float)bytesReadSoFar / totalBytes;
+                   // progressBar.Report(totalProgress);
+                });
+
+
+                
+
+                //await _deviceService.ReadFlashAsync(
+                //    entryStream,
+                //    partitionEntry.Address,
+                //    partitionEntry.Size,
+                //    cancelButtonSource.Token,
+                //    progress
+                //);
+            }
+
+            //await _deviceService.ResetAndDisposeDevice();
+        }
+
+
+
 
         private async void NewArchive()
         {
@@ -151,13 +219,13 @@ namespace ESP_Flasher
             try
             {
                 UiEnabled(false);
-                _richTextBoxLoggerFactory.Clear();
-                cancelButtonSource = new CancellationTokenSource();
-                _flashingService.UseCompression = checkBoxCompression.Checked;
-                _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
-                _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
-                await _flashingService.EraseFlashAsync(cancelButtonSource.Token);
-                _flashingService.DisposeDevice();
+                //_richTextBoxLoggerFactory.Clear();
+                //cancelButtonSource = new CancellationTokenSource();
+                //_deviceService.UseCompression = checkBoxCompression.Checked;
+                //_deviceService.SerialPort = _serialPortBinder.SelectedSerialPortName;
+                //_deviceService.BaudRate = _serialPortBinder.SelectedBaudRate;
+                //await _deviceService.EraseFlashAsync(cancelButtonSource.Token);
+                //_deviceService.Dispose();
             }
             catch (Exception ex)
             {
@@ -182,11 +250,11 @@ namespace ESP_Flasher
                 UiEnabled(false);
                 _richTextBoxLoggerFactory.Clear();
                 cancelButtonSource = new CancellationTokenSource();
-                _flashingService.UseCompression = checkBoxCompression.Checked;
-                _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
-                _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
-                await _flashingService.FlashAsync(openArchive, cancelButtonSource.Token, _progressBarBinder.Bind());
-                _flashingService.DisposeDevice();
+                _deviceService.UseCompression = checkBoxCompression.Checked;
+                _deviceService.SerialPort = _serialPortBinder.SelectedSerialPortName;
+                _deviceService.BaudRate = _serialPortBinder.SelectedBaudRate;
+                //await _deviceService.FlashAsync(openArchive, cancelButtonSource.Token, _progressBarBinder.Bind());
+                _deviceService.Dispose();
             }
             catch (Exception ex)
             {
@@ -194,35 +262,53 @@ namespace ESP_Flasher
             }
             finally
             {
-                _progressBarBinder.Bind().Report(0);
+                _progressBarBinder.Report(0);
                 UiEnabled(true);
             }
         }
 
-        private async void buttonRead_Click(object sender, EventArgs e)
+        private async void ReadDevice()
         {
+            await RunWithDisabledControlsAsync(async token => 
+            { 
+                _deviceService.UseCompression = checkBoxCompression.Checked;
+                _deviceService.SerialPort = _serialPortBinder.SelectedSerialPortName;
+                _deviceService.BaudRate = _serialPortBinder.SelectedBaudRate;
+
+                await _deviceService.InitializeAsync(token);
+                Stream flashStream = _deviceService.GetReadFlashStream(0x8000, 0xC00);
+                PartitionTableExtractor extractor = new PartitionTableExtractor(_richTextBoxLoggerFactory);
+                var partitionTable = await extractor.ParsePartitionTableAsync(flashStream, token);
+                _partitionBinder.Populate(partitionTable);
+            });
+        }
+        
+
+        private async Task RunWithDisabledControlsAsync(Func<CancellationToken, Task> task)
+        {
+            UiEnabled(false);
             try
             {
-                UiEnabled(false);
                 _richTextBoxLoggerFactory.Clear();
                 cancelButtonSource = new CancellationTokenSource();
-                _flashingService.UseCompression = checkBoxCompression.Checked;
-                _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
-                _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
-
-                MemoryStream stream = new MemoryStream();
-                await _flashingService.ReadFlashAsync(stream, cancelButtonSource.Token, _progressBarBinder.Bind());
-                _flashingService.DisposeDevice();
+                await task(cancelButtonSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogWarning("Task cancelled");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to erase flash");
+                logger.LogError(ex, "An error occurred while executing the task.");
             }
             finally
             {
+                _progressBarBinder.Report(0);
                 UiEnabled(true);
+                _deviceService.Dispose();
             }
         }
+
 
         private void UiEnabled(bool enabled)
         {
@@ -230,7 +316,6 @@ namespace ESP_Flasher
             groupBoxSerial.Enabled = enabled;
             groupBoxLog.Enabled = enabled;
             groupBoxActions.Enabled = enabled;
-
             groupBoxProgress.Enabled = !enabled;
         }
 

@@ -1,151 +1,102 @@
-﻿using ESP_Flasher.Models;
-using EspDotNet;
+﻿using EspDotNet;
 using EspDotNet.Communication;
 using EspDotNet.Config;
-using EspDotNet.Loaders.SoftLoader;
 using EspDotNet.Loaders;
+using EspDotNet.Loaders.SoftLoader;
+using EspDotNet.Tools;
 using EspDotNet.Tools.Firmware;
 using Microsoft.Extensions.Logging;
-using EspDotNet.Tools;
-using System;
+using System.IO.Ports;
 
 namespace ESP_Flasher.Services
 {
-    public class DeviceService
+    public class DeviceService : IDisposable
     {
-        public int BaudRate { get; set; } = 921600;
-        public string SerialPort { get; set; } = "COM30";
+        public string SerialPort { get; set; } = "COM1"; // Default port, can be overridden
+        public int BaudRate { get; set; } = 115200;
         public bool UseCompression { get; set; } = false;
 
         private readonly ESPToolbox _toolbox;
         private readonly ILogger<DeviceService> _logger;
+        private SerialPort? serialPort;
+        private Communicator? communicator;
+        private ILoader? bootLoader;
+        private SoftLoader? softLoader;
+        private DeviceConfig? deviceConfig;
+        public bool IsReady { get; private set; } = false;
 
-        // Internals needed for device session
-        private Communicator? _communicator;
-        private ILoader? _bootloader;
-        private SoftLoader? _softloader;
-        private ChipTypes _chipType;
-
-        public DeviceService(ILoggerFactory loggerFactory)
+        public DeviceService(ILogger<DeviceService> logger)
         {
             _toolbox = new ESPToolbox();
-            _logger = loggerFactory.CreateLogger<DeviceService>();
+            _logger = logger;
         }
 
-        private async Task InitializeDevice(CancellationToken token = default)
+        public async Task InitializeAsync(CancellationToken token)
         {
+            if (IsReady)
+                return;
 
-            _communicator = _toolbox.CreateCommunicator();
-            _toolbox.OpenSerial(_communicator, SerialPort, 115200); // start at default baud
-            _logger.LogInformation("Opened port {SerialPort}", SerialPort);
+            serialPort = new SerialPort();
+            serialPort.PortName = SerialPort;
+            serialPort.BaudRate = 115200;
+            serialPort.Open();
+            _logger.LogInformation("Serial port {Port} @ {BaudRate} opened", serialPort.PortName, serialPort.BaudRate);
 
-            _bootloader = await _toolbox.StartBootloaderAsync(_communicator, token);
+            communicator = _toolbox.CreateCommunicator(serialPort);
+            bootLoader = await _toolbox.CreateBootloaderTool(communicator).StartBootloaderAsync(token);
             _logger.LogInformation("Bootloader started");
 
-            _chipType = await _toolbox.DetectChipTypeAsync(_bootloader, token);
-            _logger.LogInformation("Detected chip type: {ChipType}", _chipType);
-
-            _softloader = await _toolbox.StartSoftloaderAsync(_communicator, _bootloader, _chipType, token);
-            _logger.LogInformation("Softloader started");
-
-            await _toolbox.ChangeBaudAsync(_communicator, _softloader, BaudRate, token);
-            _logger.LogInformation("Baudrate changed to {BaudRate}", BaudRate);
-
-        }
-
-        public async Task FlashAsync(FirmwareArchive archive, CancellationToken token = default, IProgress<float>? progress = null)
-        {
-            try
+            if (BaudRate != serialPort.BaudRate)
             {
-                await InitializeDevice(token);
-
-
-                var uploadTool = UseCompression
-                    ? _toolbox.CreateUploadFlashDeflatedTool(_softloader!, _chipType)
-                    : _toolbox.CreateUploadFlashTool(_softloader!, _chipType);
-
-                await _toolbox.UploadFirmwareAsync(uploadTool, archive, token, progress);
-                _logger.LogInformation("Firmware uploaded");
-
-                await _toolbox.ResetDeviceAsync(_communicator!, token);
-                _logger.LogInformation("Device reset");
+                await _toolbox.CreateChangeBaudRateTool(bootLoader).ChangeBaudAsync(BaudRate, serialPort.BaudRate, token);
+                _logger.LogInformation("BaudRate changed from {OldBaud} to {NewBaud}", serialPort.BaudRate, BaudRate);
+                serialPort.BaudRate = BaudRate;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to flash device");
-                throw;
-            }
-            finally
-            {
-                DisposeDevice();
-            }
-        }
 
-        public async Task EraseFlashAsync(CancellationToken token = default)
-        {
-            try
-            {
-                await InitializeDevice(token);
-                await _toolbox.EraseFlashAsync(_softloader!, token);
-                _logger.LogInformation("Flash erased");
+            deviceConfig = await _toolbox.CreateChipTypeDetectTool(bootLoader).DetectAndGetDeviceConfig(token);
+            _logger.LogInformation("Detected chip type: {Chip}", deviceConfig.ChipType);
 
-                await _toolbox.ResetDeviceAsync(_communicator!, token);
-                _logger.LogInformation("Device reset");
+            var softLoaderFirmware = DefaultFirmwareProviders.GetSoftloaderForDevice(deviceConfig.ChipType);
+            var ramUploadTool = _toolbox.CreateRamUploadTool(bootLoader, deviceConfig);
+            softLoader = await _toolbox.CreateSoftLoaderTool(communicator, ramUploadTool).StartAsync(softLoaderFirmware, token);
+            _logger.LogInformation("SoftLoader started");
 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to erase flash");
-                throw;
-            }
-            finally
-            {
-                DisposeDevice();
-            }
-        }
-
-        public async Task ReadFlashAsync(Stream destination, CancellationToken token = default, IProgress<float>? progress = null)
-        {
-            try
-            {
-                await InitializeDevice(token);
-                var readFlashTool = _toolbox.CreateReadFlashTool(_communicator!, _softloader!, _chipType);
-                readFlashTool.Progress = progress ?? new Progress<float>();
-
-                using var fileStream = File.Create("C:\\Users\\bas\\Desktop\\test.hex");
-
-                // log parition
-                await readFlashTool.ReadFlashAsync(0xA3000, 0x74D000, fileStream, token);
-                _logger.LogInformation("Flash read");
-
-                await _toolbox.ResetDeviceAsync(_communicator!, token);
-                _logger.LogInformation("Device reset");
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to erase flash");
-                throw;
-            }
-            finally
-            {
-                DisposeDevice();
-            }
+            IsReady = true;
         }
 
 
-        public void DisposeDevice()
+        public Stream GetReadFlashStream(uint address, uint size)
         {
-            if (_communicator != null)
-            {
-                _communicator.Dispose();
-                _logger.LogInformation("Closed port {SerialPort}", SerialPort);
-            }
+            if(!IsReady) throw new InvalidOperationException($"DeviceService is not initialized. Call {nameof(InitializeAsync)} first.");
+            if (softLoader == null) throw new InvalidOperationException("SoftLoader is not initialized.");
+            if (communicator == null) throw new InvalidOperationException("Communicator is not initialized.");
 
-            _communicator = null;
-            _bootloader = null;
-            _softloader = null;
-            _chipType = ChipTypes.Unknown;
+            var readTool = _toolbox.CreateReadFlashTool(communicator, softLoader);
+            return readTool.OpenFlashReadStream(address, size);
+
+        }
+
+
+
+
+
+        // ----------------------------
+        // Reset State
+        // ----------------------------
+        public void Dispose()
+        {
+            _logger.LogInformation("Disposing DeviceService state...");
+
+            communicator = null;
+            bootLoader = null;
+            softLoader = null;
+            deviceConfig = null;
+
+            serialPort?.Close();
+            serialPort?.Dispose();
+            serialPort = null;
+
+            IsReady = false;
         }
     }
 }
