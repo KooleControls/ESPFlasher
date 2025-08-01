@@ -224,6 +224,7 @@
             // richTextBox1
             // 
             richTextBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            richTextBox1.Font = new Font("Cascadia Mono", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             richTextBox1.Location = new Point(6, 22);
             richTextBox1.Name = "richTextBox1";
             richTextBox1.ReadOnly = true;
@@ -328,10 +329,10 @@
             toolStripStatusLabel_version.Size = new Size(62, 17);
             toolStripStatusLabel_version.Text = "Up to date";
             // 
-            // contextMenuStrip1
+            // contextMenuStripPartitionTable
             // 
             contextMenuStripPartitionTable.Name = "contextMenuStrip1";
-            contextMenuStripPartitionTable.Size = new Size(181, 26);
+            contextMenuStripPartitionTable.Size = new Size(61, 4);
             // 
             // Form1
             // 

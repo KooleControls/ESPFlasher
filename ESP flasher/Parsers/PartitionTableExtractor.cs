@@ -48,11 +48,8 @@ namespace ESP_Flasher.Services
         /// <returns>A PartitionTable object or null if parsing fails.</returns>
         public async Task<PartitionTable> ParsePartitionTableAsync(Stream stream, CancellationToken token)
         {
-            _logger.LogInformation("Parsing partition table...");
-
             PartitionTable table = new PartitionTable();
             byte[] buffer = new byte[0x20]; // Buffer size for each partition entry
-
 
             // Read the partition data in chunks of 32 bytes (0x20)
             while (await stream.ReadAsync(buffer, 0, buffer.Length, token) > 0)
@@ -61,26 +58,16 @@ namespace ESP_Flasher.Services
 
                 // If the entry starts with 0xFF, it's the end of the partition table
                 if (buffer[0] == 0xFF)
-                {
-                    _logger.LogInformation("Reached end of partition table.");
                     break;
-                }
-
+                
                 // Only process entries that start with 0xAA
                 if (buffer[0] == 0xAA)
                 {
                     PartitionEntry entry = ParsePartition(buffer);
-                    _logger.LogInformation("Parsed partition entry: Type={Type}, Subtype={Subtype}, Address={Address:X}, Size={Size:X}, Name={Name}",
-                        entry.Type, entry.Subtype, entry.Address, entry.Size, entry.Name);
                     table.Partitions.Add(entry);
-                }
-                else
-                {
-                    _logger.LogInformation("Invalid partition entry detected, skipping...");
                 }
             }
 
-            _logger.LogInformation("Partition table parsing completed successfully.");
             return table;
         }
 
@@ -91,8 +78,6 @@ namespace ESP_Flasher.Services
         /// <returns>A PartitionEntry object with parsed data.</returns>
         private PartitionEntry ParsePartition(byte[] rawData)
         {
-            _logger.LogDebug("Parsing partition entry from raw data.");
-
             return new PartitionEntry
             {
                 Type = rawData[2], // Partition type

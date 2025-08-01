@@ -36,6 +36,13 @@ namespace ESP_Flasher.UIBinders
                 return;
             }
 
+            Populate(appHeader);
+        }
+
+        public void Populate(AppHeader appHeader)
+        {
+            _listView.Items.Clear();
+
             // Populate the ListView with AppHeader details
             AddListViewItem("Project Name", appHeader.ProjectName);
             AddListViewItem("Version", appHeader.Version);

@@ -276,10 +276,17 @@ namespace ESP_Flasher
                 _deviceService.BaudRate = _serialPortBinder.SelectedBaudRate;
 
                 await _deviceService.InitializeAsync(token);
-                Stream flashStream = _deviceService.GetReadFlashStream(0x8000, 0xC00);
-                PartitionTableExtractor extractor = new PartitionTableExtractor(_richTextBoxLoggerFactory);
-                var partitionTable = await extractor.ParsePartitionTableAsync(flashStream, token);
+                Stream partitionTableStream = _deviceService.GetReadFlashStream(0x8000, 0xC00);
+                PartitionTableExtractor partitionExtractor = new PartitionTableExtractor(_richTextBoxLoggerFactory);
+                var partitionTable = await partitionExtractor.ParsePartitionTableAsync(partitionTableStream, token);
                 _partitionBinder.Populate(partitionTable);
+
+                // Get the ota partition to figure out where app is located
+
+                Stream applicationStream = _deviceService.GetReadFlashStream(0x800000, 4 * 1024 * 1024);
+                AppHeaderExtractor appHeaderExtractor = new AppHeaderExtractor(_richTextBoxLoggerFactory);
+                var appHeader = await appHeaderExtractor.ParseAppHeaderAsync(applicationStream, token);
+                _appHeaderListViewBinder.Populate(appHeader);
             });
         }
         
