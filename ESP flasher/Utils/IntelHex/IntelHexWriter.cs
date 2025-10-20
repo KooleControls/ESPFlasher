@@ -36,7 +36,7 @@
                     {
                         Address = 0x0000,
                         RecordType = IntelHexRecordType.ExtendedLinearAddress,
-                        Data = BitConverter.GetBytes(highAddress).Reverse().ToArray()
+                        Data = BitConverter.GetBytes(highAddress)
                     };
                     await _hexFileWriter.WriteLineAsync(SerializeRecord(extendedAddressRecord).AsMemory(), token);
                     _currentHighAddress = highAddress;
