@@ -23,20 +23,14 @@ namespace ESP_Flasher.Services
         /// <returns>A parsed PartitionTable object or null if extraction fails.</returns>
         public async Task<PartitionTable?> ExtractTableAsync(FirmwareArchive archive, CancellationToken token = default)
         {
-            _logger.LogInformation("Extracting partition table from the archive...");
-
-            // Find the partition table file in the archive
             var partitionTableFile = archive.BinFiles.FirstOrDefault(file => file.File == PartitionTableFileName);
 
             if (partitionTableFile == null)
             {
                 _logger.LogWarning("Partition table file {PartitionTableFileName} not found in the archive.", PartitionTableFileName);
-                return null; // Partition table not found
+                return null;
             }
 
-            _logger.LogInformation("Partition table file found: {PartitionTableFileName}", partitionTableFile.File);
-
-            // Parse the partition table from the binary file
             return await ParsePartitionTableAsync(new MemoryStream(partitionTableFile.Contents), token);
         }
 
@@ -48,40 +42,23 @@ namespace ESP_Flasher.Services
         /// <returns>A PartitionTable object or null if parsing fails.</returns>
         private async Task<PartitionTable?> ParsePartitionTableAsync(MemoryStream stream, CancellationToken token)
         {
-            _logger.LogInformation("Parsing partition table...");
-
             PartitionTable table = new PartitionTable();
-            byte[] buffer = new byte[0x20]; // Buffer size for each partition entry
+            byte[] buffer = new byte[0x20]; // 32-byte partition entries
 
             try
             {
-                // Read the partition data in chunks of 32 bytes (0x20)
                 while (await stream.ReadAsync(buffer, 0, buffer.Length, token) > 0)
                 {
                     token.ThrowIfCancellationRequested();
 
-                    // If the entry starts with 0xFF, it's the end of the partition table
                     if (buffer[0] == 0xFF)
-                    {
-                        _logger.LogInformation("Reached end of partition table.");
-                        break;
-                    }
+                        break; // end-of-table sentinel
 
-                    // Only process entries that start with 0xAA
                     if (buffer[0] == 0xAA)
-                    {
-                        PartitionEntry entry = ParsePartition(buffer);
-                        _logger.LogInformation("Parsed partition entry: Type={Type}, Subtype={Subtype}, Address={Address:X}, Size={Size:X}, Name={Name}",
-                            entry.Type, entry.Subtype, entry.Address, entry.Size, entry.Name);
-                        table.Partitions.Add(entry);
-                    }
-                    else
-                    {
-                        _logger.LogInformation("Invalid partition entry detected, skipping...");
-                    }
+                        table.Partitions.Add(ParsePartition(buffer));
                 }
 
-                _logger.LogInformation("Partition table parsing completed successfully.");
+                _logger.LogInformation("Loaded partition table ({Count} entries) from {File}", table.Partitions.Count, PartitionTableFileName);
                 return table;
             }
             catch (Exception ex)
@@ -98,8 +75,6 @@ namespace ESP_Flasher.Services
         /// <returns>A PartitionEntry object with parsed data.</returns>
         private PartitionEntry ParsePartition(byte[] rawData)
         {
-            _logger.LogDebug("Parsing partition entry from raw data.");
-
             return new PartitionEntry
             {
                 Type = rawData[2], // Partition type

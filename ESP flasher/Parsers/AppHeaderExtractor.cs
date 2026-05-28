@@ -59,12 +59,10 @@ namespace ESP_Flasher.Services
                 // Parse header fields
                 header.Magic = reader.ReadByte(); // Byte 0xE9
 
-                // Validate the magic byte
+                // Validate the magic byte. Most bin files in an archive (bootloader, partition
+                // table, etc.) won't match, so this is a normal-flow miss, not a warning.
                 if (header.Magic != ESP_IMAGE_HEADER_MAGIC)
-                {
-                    _logger.LogWarning("Invalid magic byte found in app header.");
                     return null;
-                }
 
                 header.SegmentCount = reader.ReadByte(); // Number of segments
                 header.SpiMode = reader.ReadByte(); // SPI mode
@@ -86,12 +84,9 @@ namespace ESP_Flasher.Services
 
                 header.MagicWord = reader.ReadUInt32(); // Magic word
 
-                // Validate the magic word
+                // Validate the magic word (normal-flow miss for non-app bins; see above).
                 if (header.MagicWord != ESP_APP_DESC_MAGIC_WORD)
-                {
-                    _logger.LogWarning("Invalid magic word found in app header.");
                     return null;
-                }
 
                 // Parse additional header fields
                 header.SecureVersion = reader.ReadUInt32();

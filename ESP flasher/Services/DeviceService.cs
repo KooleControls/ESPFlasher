@@ -54,6 +54,15 @@ namespace ESP_Flasher.Services
             _logger.LogInformation("Softloader started");
 
             await new ChangeBaudRateTool(_softloader).ChangeBaudAsync(BaudRate, BootloaderBaudRate, token);
+
+            // ChangeBaudRateTool only tells the device to switch; since we own the SerialPort,
+            // we must reconfigure the host side too. The brief delay lets the device finish its
+            // switch, and DiscardInBuffer clears any garbage that arrived at the old baud during
+            // the transition.
+            await Task.Delay(50, token);
+            _port.BaudRate = BaudRate;
+            _port.DiscardInBuffer();
+
             _logger.LogInformation("Baudrate changed to {BaudRate}", BaudRate);
         }
 
