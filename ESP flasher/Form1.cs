@@ -63,6 +63,7 @@ namespace ESP_Flasher
         {
             // File Operations
             toolStrip1.AddMenuItem("File/New").WithAction(NewArchive);
+            toolStrip1.AddMenuItem("File/Open").WithAction(Open);
             toolStrip1.AddMenuItem("File/Open Archive").WithAction(OpenArchiveDialog);
             toolStrip1.AddMenuItem("File/Save as/Archive").WithAction(SaveArchive).WithToolTip("Creates KCZIP file");
             toolStrip1.AddMenuItem("File/Save as/Application intel hex").WithAction(SaveApplicationIntelHex).WithToolTip("Creates HEX file to be used in KC220 tool and LM");
@@ -71,6 +72,20 @@ namespace ESP_Flasher
 
             // Development Tools
             toolStrip1.AddMenuItem("Development/Open Build folder").WithAction(LoadBuildDirectory);
+            toolStrip1.AddMenuItem("Development/Read partition table from device").WithAction(ReadPartitionTableFromDevice);
+
+            // Right-click a partition row to read it from the device or inspect downloaded bytes.
+            var partitionMenu = new ContextMenuStrip();
+            partitionMenu.Items.Add("Download to memory", null, (s, e) => DownloadSelectedPartition());
+            partitionMenu.Items.Add("Peek (hex viewer)", null, (s, e) => PeekSelectedPartition());
+            listViewPartitionTable.ContextMenuStrip = partitionMenu;
+            listViewPartitionTable.MouseDown += (s, e) =>
+            {
+                if (e.Button != MouseButtons.Right) return;
+                var hit = listViewPartitionTable.HitTest(e.Location);
+                listViewPartitionTable.SelectedItems.Clear();
+                if (hit.Item != null) hit.Item.Selected = true;
+            };
         }
 
         private async void NewArchive()
@@ -79,6 +94,16 @@ namespace ESP_Flasher
             _archiveBinder.Populate(openArchive);
             await _partitionBinder.Populate(openArchive);
             await _appHeaderListViewBinder.Populate(openArchive);
+        }
+
+        private async void Open()
+        {
+            // Support .bin (both the appl only and the full factory flash)
+            // Support the .hex file
+            // Dont support the .kczip file, as that is a custom format 
+
+
+
         }
 
         private async void OpenArchiveDialog()
@@ -139,6 +164,90 @@ namespace ESP_Flasher
                 return;
 
             await _archiveService.SaveArchiveIntelHex(openArchive, dialog.FileName);
+        }
+
+        private async void ReadPartitionTableFromDevice()
+        {
+            // Default ESP32 partition table location and size.
+            const uint partitionTableOffset = 0x8000;
+            const uint partitionTableSize = 0x1000;
+
+            try
+            {
+                UiEnabled(false);
+                _richTextBoxLoggerFactory.Clear();
+                cancelButtonSource = new CancellationTokenSource();
+                _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
+                _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
+
+                byte[] data = await _flashingService.ReadFlashAsync(partitionTableOffset, partitionTableSize, cancelButtonSource.Token, _progressBarBinder.Bind());
+
+                // Feed the bytes through the existing partition-table extractor + binder by wrapping
+                // them in a one-off archive that looks like the on-disk format.
+                var archive = new FirmwareArchive();
+                archive.BinFiles.Add(new BinFile
+                {
+                    File = "partition-table.bin",
+                    Address = (int)partitionTableOffset,
+                    Contents = data,
+                });
+                await _partitionBinder.Populate(archive);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to read partition table from device");
+            }
+            finally
+            {
+                _progressBarBinder.Bind().Report(0);
+                UiEnabled(true);
+            }
+        }
+
+        private async void DownloadSelectedPartition()
+        {
+            if (listViewPartitionTable.SelectedItems.Count == 0 ||
+                listViewPartitionTable.SelectedItems[0].Tag is not PartitionEntry entry)
+                return;
+
+            try
+            {
+                UiEnabled(false);
+                _richTextBoxLoggerFactory.Clear();
+                cancelButtonSource = new CancellationTokenSource();
+                _flashingService.SerialPort = _serialPortBinder.SelectedSerialPortName;
+                _flashingService.BaudRate = _serialPortBinder.SelectedBaudRate;
+
+                byte[] data = await _flashingService.ReadFlashAsync(entry.Address, entry.Size, cancelButtonSource.Token, _progressBarBinder.Bind());
+                entry.DownloadedContents = data;
+                _partitionBinder.MarkAsDownloaded(entry);
+                logger.LogInformation("Downloaded partition '{Name}' ({Size} bytes) into memory", entry.Name, data.Length);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to download partition '{Name}'", entry.Name);
+            }
+            finally
+            {
+                _progressBarBinder.Bind().Report(0);
+                UiEnabled(true);
+            }
+        }
+
+        private void PeekSelectedPartition()
+        {
+            if (listViewPartitionTable.SelectedItems.Count == 0 ||
+                listViewPartitionTable.SelectedItems[0].Tag is not PartitionEntry entry)
+                return;
+
+            if (entry.DownloadedContents == null)
+            {
+                logger.LogWarning("Partition '{Name}' has not been downloaded yet", entry.Name);
+                return;
+            }
+
+            var viewer = new HexViewerForm($"{entry.Name} @ 0x{entry.Address:X}", entry.Address, entry.DownloadedContents);
+            viewer.Show(this);
         }
 
         private void buttonRefresh_Click(object sender, EventArgs e)
@@ -257,7 +366,7 @@ namespace ESP_Flasher
                 {
                     toolStripStatusLabel_version.Text = "Up to date";
                 }
-            }catch (Exception ex)
+            }catch (Exception)
             {
                 toolStripStatusLabel_version.Text = "Error while checking for updates";
             }

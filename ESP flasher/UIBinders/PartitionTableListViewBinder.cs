@@ -14,6 +14,8 @@ namespace ESP_Flasher.UIBinders
             _archiveService = archiveService;
         }
 
+        private const int DownloadedColumnIndex = 5;
+
         private void SetupColumns()
         {
             _listView.Columns.Clear();
@@ -22,6 +24,19 @@ namespace ESP_Flasher.UIBinders
             _listView.Columns.Add("Subtype", 100);
             _listView.Columns.Add("Address", 100);
             _listView.Columns.Add("Size", 100);
+            _listView.Columns.Add("Downloaded", 100);
+        }
+
+        public void MarkAsDownloaded(PartitionEntry entry)
+        {
+            foreach (ListViewItem item in _listView.Items)
+            {
+                if (ReferenceEquals(item.Tag, entry))
+                {
+                    item.SubItems[DownloadedColumnIndex].Text = entry.DownloadedContents != null ? "Yes" : "No";
+                    return;
+                }
+            }
         }
 
         public async Task Populate(FirmwareArchive archive)
@@ -33,10 +48,11 @@ namespace ESP_Flasher.UIBinders
 
             foreach (var partition in table.Partitions)
             {
-                // Create a ListViewItem for each entry
-                ListViewItem item = new ListViewItem(partition.Name);
+                ListViewItem item = new ListViewItem(partition.Name)
+                {
+                    Tag = partition, // so right-click handlers can recover the entry
+                };
 
-                // Format the address and size as hexadecimal
                 item.SubItems.Add($"0x{partition.Type:X}");
                 item.SubItems.Add($"0x{partition.Subtype:X}");
                 item.SubItems.Add($"0x{partition.Address:X}");
