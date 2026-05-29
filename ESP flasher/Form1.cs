@@ -257,7 +257,7 @@ namespace ESP_Flasher
                 {
                     toolStripStatusLabel_version.Text = "Up to date";
                 }
-            }catch (Exception ex)
+            }catch (Exception)
             {
                 toolStripStatusLabel_version.Text = "Error while checking for updates";
             }
