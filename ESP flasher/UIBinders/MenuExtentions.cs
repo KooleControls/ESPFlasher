@@ -5,7 +5,7 @@
         public static ToolStripMenuItem AddMenuItem(this ToolStrip menu, string menuPath)
         {
             string[] split = menuPath.Split('/');
-            ToolStripMenuItem item;
+            ToolStripMenuItem item = null;
 
             if (menu.Items[split[0]] is ToolStripMenuItem tsi)
                 item = tsi;

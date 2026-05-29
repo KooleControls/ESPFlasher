@@ -75,14 +75,14 @@
             groupBoxArchive.Controls.Add(splitContainer1);
             groupBoxArchive.Location = new Point(12, 28);
             groupBoxArchive.Name = "groupBoxArchive";
-            groupBoxArchive.Size = new Size(816, 265);
+            groupBoxArchive.Size = new Size(816, 229);
             groupBoxArchive.TabIndex = 1;
             groupBoxArchive.TabStop = false;
             groupBoxArchive.Text = "Archive";
             // 
             // splitContainer1
             // 
-            splitContainer1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            splitContainer1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             splitContainer1.Location = new Point(6, 22);
             splitContainer1.Name = "splitContainer1";
             // 
@@ -93,7 +93,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(listViewAppHeader);
-            splitContainer1.Size = new Size(804, 237);
+            splitContainer1.Size = new Size(804, 201);
             splitContainer1.SplitterDistance = 536;
             splitContainer1.TabIndex = 6;
             // 
@@ -110,7 +110,7 @@
             // splitContainer2.Panel2
             // 
             splitContainer2.Panel2.Controls.Add(listViewPartitionTable);
-            splitContainer2.Size = new Size(536, 237);
+            splitContainer2.Size = new Size(536, 201);
             splitContainer2.SplitterDistance = 268;
             splitContainer2.TabIndex = 0;
             // 
@@ -119,7 +119,7 @@
             listViewHexFiles.Dock = DockStyle.Fill;
             listViewHexFiles.Location = new Point(0, 0);
             listViewHexFiles.Name = "listViewHexFiles";
-            listViewHexFiles.Size = new Size(268, 237);
+            listViewHexFiles.Size = new Size(268, 201);
             listViewHexFiles.TabIndex = 4;
             listViewHexFiles.UseCompatibleStateImageBehavior = false;
             listViewHexFiles.View = View.Details;
@@ -129,7 +129,7 @@
             listViewPartitionTable.Dock = DockStyle.Fill;
             listViewPartitionTable.Location = new Point(0, 0);
             listViewPartitionTable.Name = "listViewPartitionTable";
-            listViewPartitionTable.Size = new Size(264, 237);
+            listViewPartitionTable.Size = new Size(264, 201);
             listViewPartitionTable.TabIndex = 5;
             listViewPartitionTable.UseCompatibleStateImageBehavior = false;
             listViewPartitionTable.View = View.Details;
@@ -139,7 +139,7 @@
             listViewAppHeader.Dock = DockStyle.Fill;
             listViewAppHeader.Location = new Point(0, 0);
             listViewAppHeader.Name = "listViewAppHeader";
-            listViewAppHeader.Size = new Size(264, 237);
+            listViewAppHeader.Size = new Size(264, 201);
             listViewAppHeader.TabIndex = 5;
             listViewAppHeader.UseCompatibleStateImageBehavior = false;
             listViewAppHeader.View = View.Details;
@@ -150,7 +150,7 @@
             groupBoxActions.Controls.Add(checkBoxCompression);
             groupBoxActions.Controls.Add(buttonErase);
             groupBoxActions.Controls.Add(buttonProgram);
-            groupBoxActions.Location = new Point(12, 391);
+            groupBoxActions.Location = new Point(12, 355);
             groupBoxActions.Name = "groupBoxActions";
             groupBoxActions.Size = new Size(816, 54);
             groupBoxActions.TabIndex = 2;
@@ -212,9 +212,9 @@
             // 
             groupBoxLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxLog.Controls.Add(richTextBox1);
-            groupBoxLog.Location = new Point(12, 513);
+            groupBoxLog.Location = new Point(12, 477);
             groupBoxLog.Name = "groupBoxLog";
-            groupBoxLog.Size = new Size(816, 204);
+            groupBoxLog.Size = new Size(816, 240);
             groupBoxLog.TabIndex = 3;
             groupBoxLog.TabStop = false;
             groupBoxLog.Text = "Log";
@@ -225,7 +225,7 @@
             richTextBox1.Location = new Point(6, 22);
             richTextBox1.Name = "richTextBox1";
             richTextBox1.ReadOnly = true;
-            richTextBox1.Size = new Size(804, 176);
+            richTextBox1.Size = new Size(804, 212);
             richTextBox1.TabIndex = 0;
             richTextBox1.Text = "";
             // 
@@ -284,7 +284,7 @@
             groupBoxSerial.Controls.Add(label1);
             groupBoxSerial.Controls.Add(label2);
             groupBoxSerial.Controls.Add(comboBoxSerialPort);
-            groupBoxSerial.Location = new Point(12, 299);
+            groupBoxSerial.Location = new Point(12, 263);
             groupBoxSerial.Name = "groupBoxSerial";
             groupBoxSerial.Size = new Size(816, 86);
             groupBoxSerial.TabIndex = 3;
@@ -304,7 +304,7 @@
             groupBoxProgress.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxProgress.Controls.Add(buttonCancel);
             groupBoxProgress.Controls.Add(progressBar1);
-            groupBoxProgress.Location = new Point(12, 451);
+            groupBoxProgress.Location = new Point(12, 415);
             groupBoxProgress.Name = "groupBoxProgress";
             groupBoxProgress.Size = new Size(816, 56);
             groupBoxProgress.TabIndex = 12;

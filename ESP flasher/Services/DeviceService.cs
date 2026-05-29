@@ -81,6 +81,9 @@ namespace ESP_Flasher.Services
                     firmwareUploadTool.Progress = progress;
                 await firmwareUploadTool.UploadFirmwareAsync(archive, token);
                 _logger.LogInformation("Firmware uploaded");
+
+                await new ResetDeviceTool(_communicator!, _config.ResetSequence).ResetAsync(token);
+                _logger.LogInformation("Device reset");
             }
             catch (Exception ex)
             {
@@ -89,36 +92,6 @@ namespace ESP_Flasher.Services
             }
             finally
             {
-                await SafeResetAsync();
-                DisposeDevice();
-            }
-        }
-
-        public async Task<byte[]> ReadFlashAsync(uint offset, uint size, CancellationToken token = default, IProgress<float>? progress = null)
-        {
-            try
-            {
-                await InitializeDevice(token);
-
-                var downloadTool = new FlashDownloadTool(_softloader!, _communicator!);
-                downloadTool.OnTrace = msg => _logger.LogInformation("[flash-rd] {Msg}", msg);
-                if (progress != null)
-                    downloadTool.Progress = progress;
-
-                using var output = new MemoryStream((int)size);
-                await downloadTool.ReadFlashAsync(offset, size, output, token);
-                _logger.LogInformation("Read {Size} bytes from 0x{Offset:X}", size, offset);
-
-                return output.ToArray();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to read flash");
-                throw;
-            }
-            finally
-            {
-                await SafeResetAsync();
                 DisposeDevice();
             }
         }
@@ -129,11 +102,11 @@ namespace ESP_Flasher.Services
             {
                 await InitializeDevice(token);
 
-                // Whole-chip erase only ACKs at the end and can take ~minute on slow flash chips.
-                using var eraseCts = CancellationTokenSource.CreateLinkedTokenSource(token);
-                eraseCts.CancelAfter(TimeSpan.FromSeconds(120));
-                await new FlashEraseTool(_softloader!).EraseFlashAsync(eraseCts.Token);
+                await new FlashEraseTool(_softloader!).EraseFlashAsync(token);
                 _logger.LogInformation("Flash erased");
+
+                await new ResetDeviceTool(_communicator!, _config.ResetSequence).ResetAsync(token);
+                _logger.LogInformation("Device reset");
             }
             catch (Exception ex)
             {
@@ -142,27 +115,7 @@ namespace ESP_Flasher.Services
             }
             finally
             {
-                await SafeResetAsync();
                 DisposeDevice();
-            }
-        }
-
-        // Reset is in `finally` so the chip always boots back to user firmware after an operation
-        // (or operation failure). Without this, leaving the chip running the softloader stub looks
-        // exactly like "firmware gone" until the device is power-cycled. Swallow errors so a reset
-        // failure doesn't mask the original exception.
-        private async Task SafeResetAsync()
-        {
-            if (_communicator == null)
-                return;
-            try
-            {
-                await new ResetDeviceTool(_communicator, _config.ResetSequence).ResetAsync(CancellationToken.None);
-                _logger.LogInformation("Device reset");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("Could not reset device cleanly: {Message}. Power-cycle may be needed.", ex.Message);
             }
         }
 

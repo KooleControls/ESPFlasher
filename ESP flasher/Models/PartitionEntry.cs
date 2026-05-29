@@ -7,9 +7,6 @@
         public uint Address { get; set; }
         public uint Size { get; set; }
         public string Name { get; set; } = string.Empty;
-
-        // Populated after a "Download" action on this entry; null until then.
-        public byte[]? DownloadedContents { get; set; }
     }
 
 
